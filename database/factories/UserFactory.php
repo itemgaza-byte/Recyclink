@@ -8,38 +8,58 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @extends Factory<User>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
+    protected $model = User::class;
+
     protected static ?string $password;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name'              => fake()->name(),
+            'email'             => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'password'          => static::$password ??= Hash::make('password'),
+            'phone_number'      => fake()->numerify('08##########'),
+            'avatar'            => null,
+            'status'            => User::STATUS_ACTIVE,
+            'remember_token'    => Str::random(10),
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
     public function unverified(): static
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    public function suspended(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => User::STATUS_SUSPENDED,
+        ]);
+    }
+
+    public function asSeller(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            $user->assignRole('seller');
+
+            \App\Models\SellerProfile::factory()->create(['user_id' => $user->id]);
+            \App\Models\SellerWallet::create(['user_id' => $user->id]);
+        });
+    }
+
+    public function asBuyer(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            $user->assignRole('buyer');
+
+            \App\Models\BuyerProfile::factory()->create(['user_id' => $user->id]);
+        });
     }
 }

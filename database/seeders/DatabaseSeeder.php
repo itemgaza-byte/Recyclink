@@ -2,24 +2,40 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
+     *
+     * Urutan seeder PENTING karena ada dependency antar data:
+     * 1. RolePermissionSeeder  - Harus pertama (roles & permissions)
+     * 2. AdminUserSeeder       - Butuh roles sudah ada
+     * 3. WasteCategorySeeder   - Independent
+     * 4. DemoListingSeeder     - Butuh seller & kategori sudah ada
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            RolePermissionSeeder::class,
+            AdminUserSeeder::class,
+            WasteCategorySeeder::class,
+            DemoListingSeeder::class,
         ]);
+
+        $this->command->newLine();
+        $this->command->info('═══════════════════════════════════════════════');
+        $this->command->info('  ✅  Recyclink Database Seeded Successfully!  ');
+        $this->command->info('═══════════════════════════════════════════════');
+        $this->command->newLine();
+        $this->command->table(
+            ['Role', 'Email', 'Password'],
+            [
+                ['Admin',  'admin@recyclink.id',  'Admin@Recyclink2026!'],
+                ['Seller', 'seller@recyclink.id', 'Seller@Demo2026!'],
+                ['Buyer',  'buyer@recyclink.id',  'Buyer@Demo2026!'],
+            ]
+        );
     }
 }
