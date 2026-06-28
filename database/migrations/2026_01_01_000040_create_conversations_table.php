@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('conversations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('listing_id')->nullable()->constrained('waste_listings')->nullOnDelete();
-            $table->foreignId('buyer_id')->constrained('users')->cascadeOnDelete()->index();
-            $table->foreignId('seller_id')->constrained('users')->cascadeOnDelete()->index();
+            $table->foreignId('buyer_id')->index()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('seller_id')->index()->constrained('users')->cascadeOnDelete();
             $table->timestamp('last_message_at')->nullable();
             $table->timestamps();
         });

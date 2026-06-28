@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete()->index();
-            $table->foreignId('listing_id')->nullable()->constrained('waste_listings')->nullOnDelete()->index();
+            $table->foreignId('order_id')->index()->constrained()->cascadeOnDelete();
+            $table->foreignId('listing_id')->nullable()->index()->constrained('waste_listings')->nullOnDelete();
             $table->string('waste_name_snapshot');
             $table->decimal('quantity', 10, 2);
             $table->string('unit');

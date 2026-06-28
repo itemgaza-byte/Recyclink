@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('withdrawals', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('wallet_id')->constrained('seller_wallets')->cascadeOnDelete()->index();
+            $table->foreignId('wallet_id')->index()->constrained('seller_wallets')->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
             $table->string('bank_name', 100);
             $table->string('bank_account_number', 50);

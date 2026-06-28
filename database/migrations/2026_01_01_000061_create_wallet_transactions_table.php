@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('wallet_transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('wallet_id')->constrained('seller_wallets')->cascadeOnDelete()->index();
+            $table->foreignId('wallet_id')->index()->constrained('seller_wallets')->cascadeOnDelete();
             $table->foreignId('order_id')->nullable()->constrained()->nullOnDelete();
             $table->string('transaction_type');
             $table->decimal('amount', 12, 2);

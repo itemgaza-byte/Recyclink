@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('buyer_profiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('user_id')->index()->constrained()->cascadeOnDelete();
             $table->string('company_name')->nullable();
             $table->string('buyer_type')->nullable();
             $table->text('address')->nullable();

@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_code', 30)->unique()->index();
-            $table->foreignId('buyer_id')->constrained('users')->restrictOnDelete()->index();
-            $table->foreignId('seller_id')->constrained('users')->restrictOnDelete()->index();
+            $table->foreignId('buyer_id')->index()->constrained('users')->restrictOnDelete();
+            $table->foreignId('seller_id')->index()->constrained('users')->restrictOnDelete();
             $table->string('order_status')->default('pending')->index();
             $table->decimal('total_amount', 12, 2)->default(0);
             $table->string('pickup_method')->nullable();

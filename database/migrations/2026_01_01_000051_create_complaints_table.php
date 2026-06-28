@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('complaints', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('order_id')->index()->constrained()->cascadeOnDelete();
             $table->foreignId('complainant_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('admin_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('complaint_type');

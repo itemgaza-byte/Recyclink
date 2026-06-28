@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('waste_listings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('seller_id')->constrained('users')->cascadeOnDelete()->index();
-            $table->foreignId('category_id')->constrained('waste_categories')->restrictOnDelete()->index();
+            $table->foreignId('seller_id')->index()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('category_id')->index()->constrained('waste_categories')->restrictOnDelete();
             $table->string('title');
             $table->text('description')->nullable();
             $table->decimal('quantity', 10, 2);

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('seller_profiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete()->index();
+            $table->foreignId('user_id')->index()->constrained()->cascadeOnDelete();
             $table->string('business_name');
             $table->string('business_type')->nullable();
             $table->text('address');
@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('bank_account_number', 50)->nullable();
             $table->string('bank_account_name', 100)->nullable();
             $table->string('verification_status')->default('pending')->index();
-            // ponytail: keep extras — useful for admin flow
             $table->string('npwp', 30)->nullable()->unique();
             $table->string('nib', 30)->nullable()->unique();
             $table->text('description')->nullable();
