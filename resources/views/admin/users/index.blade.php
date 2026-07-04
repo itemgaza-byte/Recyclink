@@ -127,42 +127,7 @@
                                     @endphp
                                     
                                     @if($canUpdateStatus)
-                                        @if($user->status === 'pending')
-                                            <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST" class="inline-block">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="status" value="active">
-                                                <button type="submit" class="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors tooltip" title="Terima (Verifikasi)">
-                                                    <i data-lucide="check" class="w-4 h-4"></i>
-                                                </button>
-                                            </form>
-                                            <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST" class="inline-block form-reject-user">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="status" value="inactive">
-                                                <input type="hidden" name="rejection_reason" class="rejection-reason-input" value="">
-                                                <button type="button" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors tooltip btn-reject-user" title="Tolak Pendaftaran">
-                                                    <i data-lucide="x" class="w-4 h-4"></i>
-                                                </button>
-                                            </form>
-                                        @else
-                                            <form action="{{ route('admin.users.updateStatus', $user->id) }}" method="POST" class="inline-block form-suspend-user">
-                                            @csrf
-                                            @method('PATCH')
-                                            @if($user->status === 'active')
-                                                <input type="hidden" name="status" value="suspended">
-                                                <input type="hidden" name="rejection_reason" class="suspension-reason-input" value="">
-                                                <button type="button" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors tooltip btn-suspend-user" title="Tangguhkan Akun">
-                                                    <i data-lucide="ban" class="w-4 h-4"></i>
-                                                </button>
-                                            @elseif($user->status === 'suspended')
-                                                <input type="hidden" name="status" value="active">
-                                                <button type="submit" class="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors tooltip" title="Aktifkan Akun">
-                                                    <i data-lucide="check-circle" class="w-4 h-4"></i>
-                                                </button>
-                                            @endif
-                                            </form>
-                                        @endif
+                                        <!-- Status actions moved to modal -->
                                     @else
                                         <!-- Placeholder to maintain spacing -->
                                         <div class="w-8 inline-block"></div>
@@ -176,7 +141,10 @@
                                         data-role="{{ $user->roles->first()->name ?? 'Tidak ada' }}"
                                         data-joined="{{ $user->created_at->format('d M Y, H:i') }}"
                                         data-status="{{ ucfirst($user->status) }}"
+                                        data-raw-status="{{ $user->status }}"
                                         data-reason="{{ $user->rejection_reason ?? '-' }}"
+                                        data-can-update-status="{{ $canUpdateStatus ? 'true' : 'false' }}"
+                                        data-user-id="{{ $user->id }}"
                                         @if($user->hasRole('buyer') && $user->buyerProfile)
                                             data-profile-type="buyer"
                                             data-company="{{ $user->buyerProfile->company_name ?? '-' }}"
@@ -193,6 +161,10 @@
                                             data-city="{{ $user->sellerProfile->city ?? '-' }}"
                                             data-province="{{ $user->sellerProfile->province ?? '-' }}"
                                             data-zip="{{ $user->sellerProfile->postal_code ?? '-' }}"
+                                            data-lat="{{ $user->sellerProfile->latitude ?? '-' }}"
+                                            data-lng="{{ $user->sellerProfile->longitude ?? '-' }}"
+                                            data-verification-status="{{ $user->sellerProfile->verification_status ?? '-' }}"
+                                            data-user-id="{{ $user->id }}"
                                         @else
                                             data-profile-type="none"
                                         @endif
@@ -295,6 +267,11 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Action Button Container (Full Width Bottom) -->
+        <div id="modalActionContainer" class="hidden border-t border-gray-100 p-6 bg-gray-50/50 rounded-b-2xl">
+            <!-- Dynamic button will be injected here -->
+        </div>
     </div>
 </div>
 
@@ -378,20 +355,174 @@
                         </div>
                     `;
                 } else if (type === 'seller') {
+                    let verificationBadge = '';
+                    if (this.dataset.verificationStatus === 'pending') {
+                        verificationBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800 whitespace-nowrap uppercase tracking-normal">Menunggu Verifikasi</span>';
+                    } else if (this.dataset.verificationStatus === 'verified') {
+                        verificationBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800 whitespace-nowrap uppercase tracking-normal">Terverifikasi</span>';
+                    }
+                    
                     html = `
-                        <h4 class="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Profil Penjual</h4>
+                        <div class="flex flex-col gap-2 mb-5">
+                            <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                                Profil Penjual
+                            </h4>
+                            <div>${verificationBadge}</div>
+                        </div>
                         <div class="space-y-4">
                             <div><p class="text-xs text-gray-500 mb-1">Nama Usaha/Pengepul</p><p class="text-sm font-medium text-gray-900">${this.dataset.business}</p></div>
                             <div><p class="text-xs text-gray-500 mb-1">Tipe Usaha</p><p class="text-sm font-medium text-gray-900">${this.dataset.btype}</p></div>
                             <div><p class="text-xs text-gray-500 mb-1">Alamat Lengkap</p><p class="text-sm font-medium text-gray-900">${this.dataset.address}</p></div>
                             <div><p class="text-xs text-gray-500 mb-1">Kota / Provinsi</p><p class="text-sm font-medium text-gray-900">${this.dataset.city}, ${this.dataset.province}</p></div>
                             <div><p class="text-xs text-gray-500 mb-1">Kode Pos</p><p class="text-sm font-medium text-gray-900">${this.dataset.zip}</p></div>
+                            <div>
+                                <p class="text-xs text-gray-500 mb-1">Titik Lokasi (Maps)</p>
+                                <p class="text-sm font-medium text-gray-900">
+                                    ${this.dataset.lat !== '-' && this.dataset.lng !== '-' ? 
+                                        `<a href="https://www.google.com/maps/search/?api=1&query=${this.dataset.lat},${this.dataset.lng}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i data-lucide="map" class="w-4 h-4"></i> ${this.dataset.lat}, ${this.dataset.lng}</a>` 
+                                        : 'Belum diatur'
+                                    }
+                                </p>
+                            </div>
                         </div>
                     `;
                 } else {
                     html = `<div class="flex items-center justify-center h-full bg-gray-50 rounded-xl border border-dashed border-gray-200 p-8"><p class="text-sm text-gray-500 text-center">Tidak ada data profil spesifik.</p></div>`;
                 }
                 profileSection.innerHTML = html;
+
+                const actionContainer = document.getElementById('modalActionContainer');
+                actionContainer.innerHTML = '';
+                
+                let showAction = false;
+                if (this.dataset.canUpdateStatus === 'true') {
+                    if (this.dataset.rawStatus === 'pending') {
+                        actionContainer.innerHTML = `
+                            <div class="flex gap-4">
+                                <form action="/dashboard/admin/users/${this.dataset.userId}/status" method="POST" class="flex-1 form-reject-user">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="status" value="inactive">
+                                    <input type="hidden" name="rejection_reason" class="rejection-reason-input" value="">
+                                    <button type="button" class="w-full px-4 py-3 bg-red-100 text-red-700 font-bold rounded-xl hover:bg-red-200 transition-all flex items-center justify-center gap-2 btn-reject-user shadow-sm">
+                                        <i data-lucide="x-circle" class="w-5 h-5"></i>
+                                        Tolak Pendaftaran
+                                    </button>
+                                </form>
+                                <form action="/dashboard/admin/users/${this.dataset.userId}/status" method="POST" class="flex-1">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="status" value="active">
+                                    <button type="submit" class="w-full px-4 py-3 bg-[#719149] text-white font-bold rounded-xl hover:bg-[#607d3c] transition-all flex items-center justify-center gap-2 shadow-sm">
+                                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                                        Terima (Verifikasi)
+                                    </button>
+                                </form>
+                            </div>
+                        `;
+                        showAction = true;
+                        
+                        // Re-bind sweetalert event listener for reject
+                        setTimeout(() => {
+                            const rejectBtn = actionContainer.querySelector('.btn-reject-user');
+                            if (rejectBtn) {
+                                rejectBtn.addEventListener('click', function() {
+                                    const form = this.closest('form');
+                                    Swal.fire({
+                                        title: 'Tolak Pendaftaran?',
+                                        text: 'Apakah Anda yakin ingin menolak pengguna ini?',
+                                        icon: 'warning',
+                                        input: 'textarea',
+                                        inputLabel: 'Alasan Penolakan',
+                                        inputPlaceholder: 'Tulis alasan penolakan di sini agar pengguna dapat memperbaiki profilnya...',
+                                        inputAttributes: {
+                                            'aria-label': 'Alasan penolakan'
+                                        },
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#ef4444',
+                                        cancelButtonColor: '#6b7280',
+                                        confirmButtonText: 'Tolak',
+                                        cancelButtonText: 'Batal',
+                                        customClass: {
+                                            popup: 'rounded-2xl shadow-xl',
+                                            confirmButton: 'rounded-xl',
+                                            cancelButton: 'rounded-xl',
+                                            input: 'rounded-xl p-3 border-gray-300 focus:border-brand focus:ring-brand/20'
+                                        },
+                                        preConfirm: (reason) => {
+                                            if (!reason) {
+                                                Swal.showValidationMessage('Alasan penolakan harus diisi')
+                                            }
+                                            return reason;
+                                        }
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            form.querySelector('.rejection-reason-input').value = result.value;
+                                            form.submit();
+                                        }
+                                    });
+                                });
+                            }
+                        }, 100);
+                        
+                    } else if (this.dataset.rawStatus === 'active') {
+                        actionContainer.innerHTML = `
+                            <form action="/dashboard/admin/users/${this.dataset.userId}/status" method="POST" class="w-full form-suspend-user">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="status" value="suspended">
+                                <input type="hidden" name="rejection_reason" class="suspension-reason-input" value="">
+                                <button type="button" class="w-full px-4 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all flex items-center justify-center gap-2 btn-suspend-user shadow-sm">
+                                    <i data-lucide="ban" class="w-5 h-5"></i>
+                                    Tangguhkan Akun
+                                </button>
+                            </form>
+                        `;
+                        showAction = true;
+                        
+                        setTimeout(() => {
+                            const suspendBtn = actionContainer.querySelector('.btn-suspend-user');
+                            if (suspendBtn) {
+                                suspendBtn.addEventListener('click', function() {
+                                    const form = this.closest('form');
+                                    Swal.fire({
+                                        title: 'Tangguhkan Akun?',
+                                        text: 'Apakah Anda yakin ingin menangguhkan akun pengguna ini?',
+                                        icon: 'warning',
+                                        input: 'textarea',
+                                        inputLabel: 'Alasan Penangguhan',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#ef4444',
+                                        cancelButtonColor: '#6b7280',
+                                        confirmButtonText: 'Tangguhkan',
+                                        cancelButtonText: 'Batal',
+                                        customClass: {
+                                            popup: 'rounded-2xl shadow-xl',
+                                            confirmButton: 'rounded-xl',
+                                            cancelButton: 'rounded-xl'
+                                        }
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            form.querySelector('.suspension-reason-input').value = result.value || 'Melanggar ketentuan layanan';
+                                            form.submit();
+                                        }
+                                    });
+                                });
+                            }
+                        }, 100);
+                    }
+                }
+                
+                if (showAction) {
+                    actionContainer.classList.remove('hidden');
+                } else {
+                    actionContainer.classList.add('hidden');
+                }
+                
+                // Re-initialize lucide icons for the new content in action container
+                if (window.lucide) {
+                    lucide.createIcons();
+                }
                 
                 openModal();
             });

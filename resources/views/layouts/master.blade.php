@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="turbo-prefetch" content="true">
     <title>@yield('title', 'Recyclink')</title>
 
     {{-- Vite: CSS & JS (includes Tailwind CSS v4) --}}
@@ -32,11 +33,23 @@
 
     @stack('scripts')
 
-    {{-- Activate Lucide Icons --}}
+    @include('layouts.global-loader')
+
+    <style>
+        /* Turbo Progress Bar Styling */
+        .turbo-progress-bar {
+            height: 4px;
+            background-color: #14b8a6; /* Brand color */
+            z-index: 99999;
+        }
+    </style>
+
+    {{-- Activate Lucide Icons & Turbo Loaders --}}
     <script>
         document.addEventListener("turbo:load", function() {
             lucide.createIcons();
         });
+
         // Initial load
         lucide.createIcons();
     </script>

@@ -46,7 +46,11 @@ class BuyerPaymentController extends Controller implements HasMiddleware
 
         try {
             $payment = $this->paymentService->createManualPayment(auth()->user(), $order, $request->validated());
-            return redirect()->route('buyer.payments.show', $payment)->with('success', 'Payment proof submitted.');
+            
+            // Simulate Payment Gateway Success Immediately
+            $this->paymentService->markAsPaid(auth()->user(), $payment);
+
+            return redirect()->route('buyer.orders.show', $order)->with('success', 'Pembayaran berhasil dikonfirmasi. Pesanan sedang diproses.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

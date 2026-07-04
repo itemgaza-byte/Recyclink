@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="turbo-prefetch" content="true">
     <title>Masuk - Recyclink</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4/dist/turbo.es2017-umd.js"></script>
 </head>
 <body class="bg-white flex min-h-screen antialiased">
     
@@ -143,7 +145,10 @@
     </div>
     
     <script>
-        lucide.createIcons();
+        document.addEventListener("turbo:load", function() {
+            lucide.createIcons();
+        });
+        if (!window.Turbo) lucide.createIcons();
         
         // Password visibility toggle
         document.querySelectorAll('.btn-toggle-password').forEach(button => {
@@ -165,5 +170,6 @@
             });
         });
     </script>
+    @include('layouts.global-loader')
 </body>
 </html>

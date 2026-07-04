@@ -15,85 +15,115 @@
         <div class="flex flex-col lg:flex-row gap-8">
             {{-- SIDEBAR FILTER --}}
             <aside class="w-full lg:w-64 shrink-0">
-                <div class="bg-white border border-gray-200 rounded-2xl p-5 sticky top-24">
-                    <div class="flex items-center justify-between mb-5">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-gray-500"></i>
-                            <span class="font-semibold text-gray-900">Filter</span>
-                        </div>
-                        <button id="btn-reset" class="text-xs font-medium text-brand hover:underline">Reset</button>
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm sticky top-24">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg font-bold text-gray-900">Filter</h2>
+                        <button id="btn-reset" class="text-sm font-semibold text-brand hover:text-brand-hover transition-colors">Reset</button>
                     </div>
-                    {{-- Kategori --}}
-                    <div class="mb-6">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Kategori</p>
-                        <div class="space-y-2.5" id="filter-kategori">
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="kategori" value="logam" class="accent-brand w-4 h-4 rounded cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Logam & Metal</span>
-                            </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="kategori" value="plastik" class="accent-brand w-4 h-4 rounded cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Plastik</span>
-                            </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="kategori" value="kertas" class="accent-brand w-4 h-4 rounded cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Kertas & Karton</span>
-                            </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="kategori" value="elektronik" class="accent-brand w-4 h-4 rounded cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Elektronik (E-Waste)</span>
-                            </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="kategori" value="kayu" class="accent-brand w-4 h-4 rounded cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Kayu & Biomassa</span>
-                            </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="kategori" value="tekstil" class="accent-brand w-4 h-4 rounded cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Tekstil & Kain</span>
-                            </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="kategori" value="minyak" class="accent-brand w-4 h-4 rounded cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Minyak & Cairan</span>
-                            </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group">
-                                <input type="checkbox" name="kategori" value="organik" class="accent-brand w-4 h-4 rounded cursor-pointer">
-                                <span class="text-sm text-gray-700 group-hover:text-gray-900">Limbah Organik</span>
+
+                    {{-- Kategori Accordion --}}
+                    <details class="group mb-5 border-b border-gray-100 pb-5" open>
+                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none">
+                            Kategori
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="mt-4 space-y-3 max-h-48 overflow-y-auto pr-1">
+                            @foreach($categories as $category)
+                                <label class="flex items-center gap-3 cursor-pointer group/label">
+                                    <input type="checkbox" value="{{ strtolower($category->category_name) }}" class="category-filter accent-brand w-4 h-4 rounded cursor-pointer border-gray-300 text-brand focus:ring-brand">
+                                    <span class="text-sm text-gray-600 group-hover/label:text-gray-900 transition-colors">{{ $category->category_name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </details>
+
+                    {{-- Lokasi Accordion --}}
+                    <details class="group mb-5 border-b border-gray-100 pb-5" open>
+                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none">
+                            Lokasi
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="mt-4">
+                            <div class="relative">
+                                <input type="text" id="search-lokasi" placeholder="Cari kota..."
+                                    class="w-full text-sm border border-gray-200 rounded-lg pl-9 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition placeholder-gray-400">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-gray-400 absolute left-3 top-3"></i>
+                            </div>
+                        </div>
+                    </details>
+
+                    {{-- Harga Accordion --}}
+                    <details class="group mb-5 border-b border-gray-100 pb-5" open>
+                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none">
+                            Harga
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="mt-4 flex items-center gap-2">
+                            <div class="relative w-full">
+                                <span class="absolute left-2.5 top-2.5 text-xs text-gray-400 font-medium">Rp</span>
+                                <input type="number" id="harga-min" placeholder="Min"
+                                    class="w-full text-sm border border-gray-200 rounded-lg pl-7 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition placeholder-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                            </div>
+                            <span class="text-gray-300 font-medium">–</span>
+                            <div class="relative w-full">
+                                <span class="absolute left-2.5 top-2.5 text-xs text-gray-400 font-medium">Rp</span>
+                                <input type="number" id="harga-max" placeholder="Max"
+                                    class="w-full text-sm border border-gray-200 rounded-lg pl-7 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition placeholder-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                            </div>
+                        </div>
+                    </details>
+
+                    {{-- Minimal Volume Accordion --}}
+                    <details class="group mb-5 border-b border-gray-100 pb-5">
+                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none">
+                            Minimal Volume
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="mt-4">
+                            <input type="number" id="volume-min" placeholder="Contoh: 100"
+                                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition placeholder-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                        </div>
+                    </details>
+
+                    {{-- Status Accordion --}}
+                    <details class="group mb-5" open>
+                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none">
+                            Status
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform"></i>
+                        </summary>
+                        <div class="mt-4">
+                            <label class="flex items-center gap-3 cursor-pointer group/label">
+                                <input type="checkbox" id="filter-status" checked class="accent-brand w-4 h-4 rounded cursor-pointer border-gray-300 text-brand focus:ring-brand">
+                                <span class="text-sm text-gray-600 group-hover/label:text-gray-900 transition-colors">Hanya Tersedia</span>
                             </label>
                         </div>
-                    </div>
-                    {{-- Harga --}}
-                    <div class="mb-6">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Harga (Rp)</p>
-                        <div class="flex items-center gap-2">
-                            <input type="number" id="harga-min" placeholder="Min"
-                                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition placeholder-gray-400">
-                            <span class="text-gray-300 shrink-0">–</span>
-                            <input type="number" id="harga-max" placeholder="Max"
-                                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition placeholder-gray-400">
-                        </div>
-                    </div>
-                    {{-- Satuan --}}
-                    <div class="mb-6">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Satuan</p>
-                        <div class="flex flex-wrap gap-2" id="filter-satuan">
-                            <button data-satuan="semua" class="satuan-btn text-xs font-medium border px-3 py-1.5 rounded-lg transition-all bg-brand text-white border-brand">Semua</button>
-                            <button data-satuan="kg"    class="satuan-btn text-xs font-medium border px-3 py-1.5 rounded-lg transition-all bg-white text-gray-600 border-gray-200 hover:border-brand hover:text-brand">kg</button>
-                            <button data-satuan="liter" class="satuan-btn text-xs font-medium border px-3 py-1.5 rounded-lg transition-all bg-white text-gray-600 border-gray-200 hover:border-brand hover:text-brand">liter</button>
-                            <button data-satuan="pcs"   class="satuan-btn text-xs font-medium border px-3 py-1.5 rounded-lg transition-all bg-white text-gray-600 border-gray-200 hover:border-brand hover:text-brand">pcs</button>
-                            <button data-satuan="ton"   class="satuan-btn text-xs font-medium border px-3 py-1.5 rounded-lg transition-all bg-white text-gray-600 border-gray-200 hover:border-brand hover:text-brand">ton</button>
-                        </div>
-                    </div>
+                    </details>
+
                     <button id="btn-apply"
-                        class="w-full bg-brand hover:bg-brand-hover text-white font-semibold text-sm py-2.5 rounded-xl transition-colors">
-                        Terapkan Filter
+                        class="w-full mt-2 bg-brand hover:bg-brand-hover text-white font-bold text-sm py-3 rounded-xl transition-all shadow-sm">
+                        Terapkan
                     </button>
                 </div>
             </aside>
             {{-- MAIN CONTENT --}}
             <div class="flex-1 min-w-0">
+                {{-- TABS (Produk & Toko) --}}
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex gap-8" aria-label="Tabs">
+                        <button id="tab-produk" class="tab-btn active-tab border-brand text-brand border-b-2 py-4 px-1 text-sm font-bold flex items-center gap-2">
+                            <i data-lucide="package" class="w-4 h-4"></i>
+                            Produk
+                        </button>
+                        <button id="tab-toko" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-4 px-1 text-sm font-medium flex items-center gap-2 transition-colors">
+                            <i data-lucide="store" class="w-4 h-4"></i>
+                            Toko
+                        </button>
+                    </nav>
+                </div>
+
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <p id="result-count" class="text-sm text-gray-500">
-                        Menampilkan <span class="font-semibold text-gray-800" id="count-number">18</span> produk limbah
+                        Menampilkan <span class="font-semibold text-gray-800" id="count-number">{{ $listings->count() }}</span> <span id="count-label">produk limbah</span>
                     </p>
                     <div class="flex items-center gap-2 shrink-0">
                         <span class="text-sm text-gray-500">Urutkan:</span>
@@ -102,11 +132,18 @@
                             <option value="terbaru">Terbaru</option>
                             <option value="harga-asc">Harga Terendah</option>
                             <option value="harga-desc">Harga Tertinggi</option>
-                            <option value="stok-desc">Stok Terbanyak</option>
+                            <option value="stok-desc">Volume Terbanyak</option>
+                            <option value="jarak-asc">Jarak Terdekat (Simulasi)</option>
                         </select>
                     </div>
                 </div>
+                
+                {{-- Produk Grid --}}
                 <div id="card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8"></div>
+                
+                {{-- Toko Grid --}}
+                <div id="toko-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8"></div>
+                
                 <div id="pagination" class="flex items-center justify-center gap-1.5 mt-8"></div>
             </div>
         </div>
@@ -116,148 +153,224 @@
 
 @push('scripts')
 <script>
-const ALL_LISTINGS = [
-    { id: 1,  title: 'Styrofoam / EPS Bekas – Bongkar Gudang',         category: 'plastik',   categoryLabel: 'Plastik',        city: 'Surakarta',  price: 3000,  unit: 'kg',    stock: 8000,   desc: 'Styrofoam / EPS bekas dari pembongkaran gudang. Kondisi bersih, siap dikirim dalam jumlah besar. Cocok untuk daur ulang dan produksi ulang bahan bangunan.', seller: 'CV Maju Jaya', kondisi: 'Bekas layak pakai', moq: '500 kg', image: 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=600&q=80' },
-    { id: 2,  title: 'Sekam Padi – Bahan Bakar Boiler',                 category: 'organik',   categoryLabel: 'Limbah Organik', city: 'Madiun',     price: 800,   unit: 'kg',    stock: 100000, desc: 'Sekam padi kering hasil penggilingan. Kalori tinggi, cocok sebagai bahan bakar boiler industri atau campuran pakan ternak.', seller: 'UD Tani Makmur', kondisi: 'Kering & bersih', moq: '1000 kg', image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&q=80' },
-    { id: 3,  title: 'E-Waste Kabel & PCB Campuran',                    category: 'elektronik',categoryLabel: 'Elektronik',     city: 'Tangerang',  price: 18000, unit: 'kg',    stock: 3000,   desc: 'Limbah elektronik berupa kabel campuran dan PCB bekas. Mengandung tembaga, aluminium, dan logam berharga lainnya.', seller: 'PT Recycle Tech', kondisi: 'Campuran', moq: '100 kg', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80' },
-    { id: 4,  title: 'Kain Perca Katun – Sisa Konveksi',                category: 'tekstil',   categoryLabel: 'Tekstil & Kain', city: 'Solo',       price: 1500,  unit: 'kg',    stock: 5000,   desc: 'Sisa kain perca katun dari konveksi pakaian. Berwarna-warni, cocok untuk kerajinan, keset, atau bahan isian.', seller: 'Konveksi Solo Jaya', kondisi: 'Sisa produksi', moq: '50 kg', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
-    { id: 5,  title: 'Kardus & Karton Bekas Pabrik – Grade A',          category: 'kertas',    categoryLabel: 'Kertas & Karton',city: 'Yogyakarta', price: 2200,  unit: 'kg',    stock: 20000,  desc: 'Kardus dan karton bekas dari pabrik. Grade A – kondisi masih kuat dan layak press. Tersedia dalam jumlah besar dan konsisten.', seller: 'PT Karton Nusantara', kondisi: 'Grade A', moq: '200 kg', image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&q=80' },
-    { id: 6,  title: 'Plastik PET Botol Bersih Siap Cacah',             category: 'plastik',   categoryLabel: 'Plastik PET',   city: 'Depok',      price: 5500,  unit: 'kg',    stock: 15000,  desc: 'Plastik PET dari botol minuman yang telah dipilah dan dibersihkan. Siap masuk mesin pencacah. Tidak ada campuran sampah lain.', seller: 'Bank Sampah Depok', kondisi: 'Bersih terpilah', moq: '300 kg', image: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600&q=80' },
-    { id: 7,  title: 'Besi Tua Campuran – Ton Timbang di Tempat',       category: 'logam',     categoryLabel: 'Besi & Baja',   city: 'Medan',      price: 3800,  unit: 'kg',    stock: 30000,  desc: 'Besi tua campuran dari bongkaran bangunan dan mesin pabrik. Timbang di tempat. Harga bisa negosiasi untuk volume besar.', seller: 'Besi Tua Sumatera', kondisi: 'Campuran bongkaran', moq: '1000 kg', image: 'https://images.unsplash.com/photo-1558346547-4439467bd1d5?w=600&q=80' },
-    { id: 8,  title: 'Limbah Tembaga Kabel Stripping – Kadar Tinggi',   category: 'logam',     categoryLabel: 'Tembaga',       city: 'Bekasi',     price: 72000, unit: 'kg',    stock: 2000,   desc: 'Tembaga murni hasil stripping kabel industri. Kadar tinggi, cocok untuk peleburan ulang. Tersedia sertifikat kadar.', seller: 'PT Metal Prima', kondisi: 'Siap lebur', moq: '50 kg', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
-    { id: 9,  title: 'Serbuk Kayu Halus – Biomassa Energi',             category: 'kayu',      categoryLabel: 'Kayu & Biomassa',city: 'Bandung',    price: 400,   unit: 'kg',    stock: 50000,  desc: 'Serbuk kayu halus dari industri meubel dan pengergajian. Kering, kadar air rendah. Ideal untuk briket atau bahan bakar biomassa.', seller: 'UD Kayu Lestari', kondisi: 'Kering', moq: '2000 kg', image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&q=80' },
-    { id: 10, title: 'Aluminium Kaleng Cacah – Siap Lebur',             category: 'logam',     categoryLabel: 'Aluminium',     city: 'Tangerang',  price: 14500, unit: 'kg',    stock: 8000,   desc: 'Kaleng aluminium bekas minuman yang sudah dicacah dan dibersihkan. Siap masuk tungku peleburan. Kemurnian tinggi.', seller: 'CV Aluminium Utama', kondisi: 'Cacah bersih', moq: '200 kg', image: 'https://images.unsplash.com/photo-1558346547-4439467bd1d5?w=600&q=80' },
-    { id: 11, title: 'Minyak Jelantah (UCO) – Food Grade',              category: 'minyak',    categoryLabel: 'Minyak',        city: 'Bandung',    price: 8500,  unit: 'liter', stock: 10000,  desc: 'Minyak jelantah dari restoran dan industri makanan. Sudah disaring, cocok untuk produksi biodiesel atau sabun industri.', seller: 'CV Energi Hijau', kondisi: 'Tersaring', moq: '200 liter', image: 'https://images.unsplash.com/photo-1510498468133-c97f0e0dcdbe?w=600&q=80' },
-    { id: 12, title: 'Limbah Kardus Press – Grade B',                   category: 'kertas',    categoryLabel: 'Kardus',        city: 'Medan',      price: 2800,  unit: 'kg',    stock: 25000,  desc: 'Kardus bekas dalam kondisi press dan terikat rapi. Grade B dengan sedikit campuran kertas. Siap kirim ke pabrik kertas.', seller: 'Pengepul Medan Baru', kondisi: 'Press & ikat', moq: '500 kg', image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&q=80' },
-    { id: 13, title: 'Ban Bekas Truk & Alat Berat',                     category: 'plastik',   categoryLabel: 'Ban Bekas',     city: 'Surabaya',   price: 35000, unit: 'pcs',   stock: 500,    desc: 'Ban bekas truk dan alat berat. Kondisi layak retreading atau untuk crumb rubber. Ukuran bervariasi, tersedia pilihan.', seller: 'UD Ban Jaya', kondisi: 'Layak retreading', moq: '10 pcs', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
-    { id: 14, title: 'Serbuk Besi (Iron Powder) Sisa Produksi',         category: 'logam',     categoryLabel: 'Logam',         city: 'Cikarang',   price: 6200,  unit: 'kg',    stock: 12000,  desc: 'Serbuk besi sisa mesin gerinda pabrik. Kemurnian besi tinggi, cocok untuk industri metalurgi dan magnet.', seller: 'PT Cikarang Metal', kondisi: 'Serbuk halus', moq: '100 kg', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80' },
-    { id: 15, title: 'Limbah Kaca Pecah – Industri Botol',              category: 'elektronik',categoryLabel: 'Kaca',          city: 'Semarang',   price: 1200,  unit: 'kg',    stock: 40000,  desc: 'Pecahan kaca dari industri botol dan kemasan. Bersih tanpa campuran keramik. Siap masuk dapur peleburan kaca.', seller: 'CV Kaca Semarang', kondisi: 'Bersih', moq: '500 kg', image: 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=600&q=80' },
-    { id: 16, title: 'Ampas Tebu (Bagasse) – Kering',                   category: 'organik',   categoryLabel: 'Limbah Organik',city: 'Malang',     price: 600,   unit: 'kg',    stock: 80000,  desc: 'Ampas tebu kering dari pabrik gula. Nilai kalori baik untuk bahan bakar boiler. Tersedia dalam karung atau curah.', seller: 'PG Malang Baru', kondisi: 'Kering curah', moq: '3000 kg', image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&q=80' },
-    { id: 17, title: 'Kulit Imitasi Sisa Jahit – Lembaran',             category: 'tekstil',   categoryLabel: 'Tekstil',       city: 'Sidoarjo',   price: 3500,  unit: 'kg',    stock: 3000,   desc: 'Sisa lembaran kulit imitasi (PU leather) dari pabrik tas dan sepatu. Warna bervariasi, bisa untuk kerajinan kecil atau sol sepatu.', seller: 'Pabrik Tas Sidoarjo', kondisi: 'Sisa potong', moq: '50 kg', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
-    { id: 18, title: 'Plastik HDPE Giling – Natural / Putih',           category: 'plastik',   categoryLabel: 'Plastik HDPE',  city: 'Bogor',      price: 7800,  unit: 'kg',    stock: 18000,  desc: 'Plastik HDPE giling dari botol susu dan jerigen. Warna natural/putih bersih, kemurnian tinggi. Siap masuk extruder.', seller: 'CV Plastik Bogor', kondisi: 'Giling bersih', moq: '200 kg', image: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600&q=80' },
-];
-let state = { kategori:[], satuan:'semua', hargaMin:null, hargaMax:null, sort:'terbaru', page:1, perPage:9 };
-function applyFilters() {
-    let data = [...ALL_LISTINGS];
-    if (state.kategori.length > 0) data = data.filter(l => state.kategori.includes(l.category));
-    if (state.satuan   !== 'semua') data = data.filter(l => l.unit === state.satuan);
-    if (state.hargaMin !== null)    data = data.filter(l => l.price >= state.hargaMin);
-    if (state.hargaMax !== null)    data = data.filter(l => l.price <= state.hargaMax);
-    if (state.sort === 'harga-asc')  data.sort((a,b) => a.price - b.price);
-    if (state.sort === 'harga-desc') data.sort((a,b) => b.price - a.price);
-    if (state.sort === 'stok-desc')  data.sort((a,b) => b.stock - a.stock);
-    return data;
-}
-function renderCards(data) {
-    const grid = document.getElementById('card-grid');
-    const start = (state.page - 1) * state.perPage;
-    const slice = data.slice(start, start + state.perPage);
-    document.getElementById('count-number').textContent = data.length;
-    if (slice.length === 0) {
-        grid.innerHTML = `<div class="col-span-3 text-center py-24 border border-dashed border-gray-200 rounded-2xl bg-white">
-            <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/></svg>
-            <p class="text-sm text-gray-400">Tidak ada produk ditemukan.</p></div>`;
-        return;
-    }
-    grid.innerHTML = slice.map(l => `
-        <a href="/marketplace/${l.id}" class="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col">
-            <div class="relative h-52 bg-gray-100 shrink-0 overflow-hidden">
-                <img src="${l.image}" alt="${l.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                     onerror="this.style.display='none'">
-                <span class="absolute top-3 left-3 bg-brand text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">${l.categoryLabel}</span>
-            </div>
-            <div class="p-4 flex flex-col grow">
-                <h5 class="text-base font-bold text-gray-900 line-clamp-2 leading-snug mb-1 group-hover:text-brand transition-colors">${l.title}</h5>
-                <div class="flex items-center gap-1 text-xs text-gray-400 mb-4">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    <span>${l.city}</span>
-                </div>
-                <div class="grow"></div>
-                <div class="flex items-end justify-between gap-3">
-                    <div>
-                        <p class="text-xl font-bold text-brand leading-tight">
-                            Rp ${l.price.toLocaleString('id-ID')} <span class="text-xs font-normal text-gray-400">/ ${l.unit}</span>
-                        </p>
-                        <div class="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
-                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-                            Stok: ${l.stock.toLocaleString('id-ID')} ${l.unit}
-                        </div>
-                    </div>
-                    <span class="shrink-0 text-xs font-semibold border border-gray-200 text-gray-600 group-hover:bg-brand group-hover:text-white group-hover:border-brand px-4 py-1.5 rounded-lg transition-all">Detail</span>
-                </div>
-            </div>
-        </a>`).join('');
-}
-function renderPagination(total) {
-    const totalPages = Math.ceil(total / state.perPage);
-    const pg = document.getElementById('pagination');
-    if (totalPages <= 1) { pg.innerHTML = ''; return; }
-    const btn = (active, content, onclick, disabled=false) =>
-        `<button onclick="${onclick}" ${disabled?'disabled':''} class="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${active ? 'bg-brand text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-600 hover:border-brand hover:text-brand'} disabled:opacity-40 disabled:cursor-not-allowed">${content}</button>`;
-    let html = btn(false, '&#8249;', `goPage(${state.page-1})`, state.page===1);
-    for (let i = 1; i <= totalPages; i++) {
-        if (i===1 || i===totalPages || (i>=state.page-1 && i<=state.page+1))
-            html += btn(i===state.page, i, `goPage(${i})`);
-        else if (i===state.page-2 || i===state.page+2)
-            html += `<span class="w-9 h-9 flex items-center justify-center text-gray-400 text-sm">…</span>`;
-    }
-    html += btn(false, '&#8250;', `goPage(${state.page+1})`, state.page===totalPages);
-    pg.innerHTML = html;
-}
-window.goPage = function(p) {
-    const filtered = applyFilters();
-    const max = Math.ceil(filtered.length / state.perPage);
-    if (p < 1 || p > max) return;
-    state.page = p;
-    renderCards(filtered);
-    renderPagination(filtered.length);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-function refresh() {
-    state.page = 1;
-    const filtered = applyFilters();
-    renderCards(filtered);
-    renderPagination(filtered.length);
-}
-document.addEventListener('DOMContentLoaded', () => {
-    function updateKategoriState() {
-        state.kategori = Array.from(document.querySelectorAll('input[name="kategori"]:checked')).map(cb => cb.value);
-    }
-    document.querySelectorAll('input[name="kategori"]').forEach(r => r.addEventListener('change', updateKategoriState));
+    let state = { tab: 'produk', categories: [], searchLokasi:'', volumeMin:null, hargaMin:null, hargaMax:null, sort:'terbaru', page:1, perPage:9 };
 
-    function setSatuan(val) {
-        state.satuan = val;
-        document.querySelectorAll('.satuan-btn').forEach(b => {
-            const active = b.dataset.satuan === val;
-            if (active) {
-                b.classList.add('bg-brand', 'text-white', 'border-brand');
-                b.classList.remove('bg-white', 'text-gray-600', 'border-gray-200');
+    function debounce(fn, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => fn.apply(this, args), delay);
+        };
+    }
+
+    async function fetchData() {
+        showSkeletons(state.tab);
+        const params = new URLSearchParams();
+        params.append('tab', state.tab);
+        params.append('page', state.page);
+        params.append('sort', state.sort);
+        if (state.searchLokasi) params.append('lokasi', state.searchLokasi);
+        if (state.volumeMin) params.append('volume_min', state.volumeMin);
+        if (state.hargaMin) params.append('harga_min', state.hargaMin);
+        if (state.hargaMax) params.append('harga_max', state.hargaMax);
+        state.categories.forEach(cat => params.append('categories[]', cat));
+
+        try {
+            const res = await fetch(`/marketplace?${params.toString()}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            const result = await res.json();
+            
+            const isProd = state.tab === 'produk';
+            document.getElementById('card-grid').classList.toggle('hidden', !isProd);
+            document.getElementById('toko-grid').classList.toggle('hidden', isProd);
+
+            if (isProd) {
+                renderCards(result.data, result.total);
             } else {
-                b.classList.remove('bg-brand', 'text-white', 'border-brand');
-                b.classList.add('bg-white', 'text-gray-600', 'border-gray-200');
+                renderSellers(result.data, result.total);
             }
-        });
+            renderPagination(result.total, result.last_page);
+        } catch (err) {
+            console.error("Error fetching data:", err);
+        }
     }
 
-    document.querySelectorAll('.satuan-btn').forEach(btn => {
-        btn.addEventListener('click', () => setSatuan(btn.dataset.satuan));
-    });
+    function showSkeletons(type) {
+        const grid = document.getElementById(type === 'produk' ? 'card-grid' : 'toko-grid');
+        let html = '';
+        for(let i = 0; i < state.perPage; i++) {
+            html += type === 'produk' ? `
+            <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm animate-pulse flex flex-col">
+                <div class="h-52 bg-gray-200 shrink-0"></div>
+                <div class="p-4 flex-1 flex flex-col">
+                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
+                    <div class="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+                    <div class="mt-auto pt-3 border-t border-gray-100 flex justify-between">
+                        <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+                        <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+                    </div>
+                </div>
+            </div>` : `
+            <div class="bg-white border border-gray-200 rounded-2xl p-5 animate-pulse flex items-center gap-4">
+                <div class="w-16 h-16 rounded-full bg-gray-200 shrink-0"></div>
+                <div class="flex-1">
+                    <div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+            </div>`;
+        }
+        grid.innerHTML = html;
+        document.getElementById('pagination').innerHTML = '';
+    }
 
-    document.getElementById('harga-min').addEventListener('input', e => state.hargaMin = e.target.value ? parseInt(e.target.value) : null);
-    document.getElementById('harga-max').addEventListener('input', e => state.hargaMax = e.target.value ? parseInt(e.target.value) : null);
-    document.getElementById('sort-select').addEventListener('change', e => { state.sort = e.target.value; refresh(); });
-    document.getElementById('btn-apply').addEventListener('click', refresh);
+    function renderCards(data, total) {
+        const grid = document.getElementById('card-grid');
+        document.getElementById('count-number').textContent = total;
+        document.getElementById('count-label').textContent = 'produk limbah';
+        
+        if (data.length === 0) {
+            grid.innerHTML = `<div class="col-span-3 text-center py-24 border border-dashed border-gray-200 rounded-2xl bg-white">
+                <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/></svg>
+                <p class="text-sm text-gray-400">Tidak ada produk ditemukan.</p></div>`;
+            return;
+        }
+        grid.innerHTML = data.map(l => `
+            <a href="/marketplace/${l.id}" class="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col">
+                <div class="relative h-52 bg-gray-100 shrink-0 overflow-hidden">
+                    <img src="${l.image}" alt="${l.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.style.display='none'">
+                    <span class="absolute top-3 left-3 bg-brand text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">${l.categoryLabel}</span>
+                </div>
+                <div class="p-4 flex flex-col grow">
+                    <h5 class="text-base font-bold text-gray-900 line-clamp-2 leading-snug mb-1 group-hover:text-brand transition-colors">${l.title}</h5>
+                    <div class="flex items-center gap-1 text-xs text-gray-400 mb-4">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span>${l.city}</span>
+                    </div>
+                    <div class="grow"></div>
+                    <div class="flex items-end justify-between gap-3">
+                        <div>
+                            <p class="text-xl font-bold text-brand leading-tight">
+                                Rp ${l.price.toLocaleString('id-ID')} <span class="text-xs font-normal text-gray-400">/ ${l.unit}</span>
+                            </p>
+                            <div class="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                                Stok: ${l.stock.toLocaleString('id-ID')} ${l.unit}
+                            </div>
+                        </div>
+                        <span class="shrink-0 text-xs font-semibold border border-gray-200 text-gray-600 group-hover:bg-brand group-hover:text-white group-hover:border-brand px-4 py-1.5 rounded-lg transition-all">Detail</span>
+                    </div>
+                </div>
+            </a>`).join('');
+    }
 
-    document.getElementById('btn-reset').addEventListener('click', () => {
-        state = { ...state, kategori:[], satuan:'semua', hargaMin:null, hargaMax:null, page:1 };
-        document.querySelectorAll('input[name="kategori"]').forEach(cb => cb.checked = false);
-        document.getElementById('harga-min').value = '';
-        document.getElementById('harga-max').value = '';
-        setSatuan('semua');
+    function renderSellers(data, total) {
+        const grid = document.getElementById('toko-grid');
+        document.getElementById('count-number').textContent = total;
+        document.getElementById('count-label').textContent = 'toko';
+
+        if (data.length === 0) {
+            grid.innerHTML = `<div class="col-span-3 text-center py-24 border border-dashed border-gray-200 rounded-2xl bg-white">
+                <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <p class="text-sm text-gray-400">Tidak ada toko ditemukan.</p></div>`;
+            return;
+        }
+        grid.innerHTML = data.map(s => `
+            <div class="group bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col items-center text-center">
+                <div class="w-20 h-20 rounded-full overflow-hidden mb-4 border-2 border-gray-100">
+                    <img src="${s.avatar}" alt="${s.name}" class="w-full h-full object-cover">
+                </div>
+                <h5 class="text-base font-bold text-gray-900 mb-1">${s.name}</h5>
+                <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                    <i data-lucide="map-pin" class="w-3 h-3"></i> ${s.city}
+                </div>
+                <span class="inline-block bg-teal-50 text-teal-600 text-xs font-semibold px-2.5 py-1 rounded-md mb-4">${s.type}</span>
+                <a href="/toko/${s.id}" class="block w-full text-sm font-semibold border border-brand text-brand hover:bg-brand hover:text-white py-2 rounded-xl transition-colors text-center">Lihat Toko</a>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    function renderPagination(total, totalPages) {
+        const pg = document.getElementById('pagination');
+        if (totalPages <= 1) { pg.innerHTML = ''; return; }
+        const btn = (active, content, onclick, disabled=false) =>
+            `<button onclick="${onclick}" ${disabled?'disabled':''} class="w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${active ? 'bg-brand text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-600 hover:border-brand hover:text-brand'} disabled:opacity-40 disabled:cursor-not-allowed">${content}</button>`;
+        let html = btn(false, '&#8249;', `goPage(${state.page-1})`, state.page===1);
+        for (let i = 1; i <= totalPages; i++) {
+            if (i===1 || i===totalPages || (i>=state.page-1 && i<=state.page+1))
+                html += btn(i===state.page, i, `goPage(${i})`);
+            else if (i===state.page-2 || i===state.page+2)
+                html += `<span class="w-9 h-9 flex items-center justify-center text-gray-400 text-sm">…</span>`;
+        }
+        html += btn(false, '&#8250;', `goPage(${state.page+1})`, state.page===totalPages);
+        pg.innerHTML = html;
+    }
+
+    window.goPage = function(p) {
+        state.page = p;
+        fetchData();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    function refresh() {
+        state.page = 1;
+        fetchData();
+    }
+
+    function initMarketplace() {
+        const el = id => document.getElementById(id);
+        if (!el('card-grid')) return;
+
+        const toggleTabs = (tab) => {
+            state.tab = tab;
+            const isProd = tab === 'produk';
+            el('tab-produk').className = isProd ? "tab-btn active-tab border-brand text-brand border-b-2 py-4 px-1 text-sm font-bold flex items-center gap-2" : "tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-4 px-1 text-sm font-medium flex items-center gap-2 transition-colors";
+            el('tab-toko').className = !isProd ? "tab-btn active-tab border-brand text-brand border-b-2 py-4 px-1 text-sm font-bold flex items-center gap-2" : "tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-4 px-1 text-sm font-medium flex items-center gap-2 transition-colors";
+            refresh();
+        };
+
+        el('tab-produk')?.addEventListener('click', () => toggleTabs('produk'));
+        el('tab-toko')?.addEventListener('click', () => toggleTabs('toko'));
+
+        document.querySelectorAll('.category-filter').forEach(cb => {
+            cb.addEventListener('change', e => {
+                const val = e.target.value;
+                if(e.target.checked) state.categories.push(val);
+                else state.categories = state.categories.filter(c => c !== val);
+                refresh();
+            });
+        });
+
+        // Use debounced functions for search/inputs to prevent database hammer
+        const debouncedRefresh = debounce(refresh, 350);
+
+        el('search-lokasi')?.addEventListener('input', e => { state.searchLokasi = e.target.value; debouncedRefresh(); });
+        el('volume-min')?.addEventListener('input', e => { state.volumeMin = e.target.value ? parseFloat(e.target.value) : null; debouncedRefresh(); });
+        el('harga-min')?.addEventListener('input', e => { state.hargaMin = e.target.value ? parseInt(e.target.value) : null; debouncedRefresh(); });
+        el('harga-max')?.addEventListener('input', e => { state.hargaMax = e.target.value ? parseInt(e.target.value) : null; debouncedRefresh(); });
+        el('sort-select')?.addEventListener('change', e => { state.sort = e.target.value; refresh(); });
+        el('btn-apply')?.addEventListener('click', refresh);
+
+        el('btn-reset')?.addEventListener('click', () => {
+            state = { tab: 'produk', categories: [], searchLokasi:'', volumeMin:null, hargaMin:null, hargaMax:null, sort:'terbaru', page:1, perPage:9 };
+            document.querySelectorAll('.category-filter').forEach(cb => cb.checked = false);
+            ['search-lokasi', 'volume-min', 'harga-min', 'harga-max'].forEach(id => { if(el(id)) el(id).value = ''; });
+            if(el('sort-select')) el('sort-select').value = 'terbaru';
+            refresh();
+        });
+
         refresh();
-    });
+    }
 
-    refresh();
-});
+    document.addEventListener('turbo:load', initMarketplace);
+    if (document.readyState !== 'loading') {
+        initMarketplace();
+    } else {
+        document.addEventListener('DOMContentLoaded', initMarketplace);
+    }
 </script>
 @endpush

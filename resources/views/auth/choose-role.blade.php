@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="turbo-prefetch" content="true">
     <title>Pilih Peran - Recyclink</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -25,6 +26,7 @@
         .role-card:hover .pilih-label { opacity: 1; }
         .role-card.active .pilih-label { opacity: 1; color: #16a34a; }
     </style>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4/dist/turbo.es2017-umd.js"></script>
 </head>
 <body class="bg-gray-50 flex min-h-screen antialiased flex-col items-center justify-center p-6">
 
@@ -128,7 +130,11 @@
             hint.className = 'text-green-600 text-sm font-medium mt-3';
         }
 
-        lucide.createIcons();
+        document.addEventListener("turbo:load", function() {
+            lucide.createIcons();
+        });
+        if (!window.Turbo) lucide.createIcons();
     </script>
+    @include('layouts.global-loader')
 </body>
 </html>

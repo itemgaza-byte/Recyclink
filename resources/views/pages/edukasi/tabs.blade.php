@@ -23,28 +23,34 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+function initEdukasiTabs() {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
     tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
+        // Remove existing listeners to prevent duplicates
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        newBtn.addEventListener('click', () => {
             // 1. Reset all tabs styling
-            tabBtns.forEach(b => {
+            const allBtns = document.querySelectorAll('.tab-btn');
+            allBtns.forEach(b => {
                 b.className = "tab-btn flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-900 py-4 border-b-2 border-transparent transition-colors whitespace-nowrap";
             });
             
             // 2. Set active tab styling
-            btn.className = "tab-btn active-tab flex items-center gap-2 text-sm font-semibold text-brand py-4 border-b-2 border-brand whitespace-nowrap";
+            newBtn.className = "tab-btn active-tab flex items-center gap-2 text-sm font-semibold text-brand py-4 border-b-2 border-brand whitespace-nowrap";
             
             // 3. Hide all content
-            tabContents.forEach(content => {
+            const allContents = document.querySelectorAll('.tab-content');
+            allContents.forEach(content => {
                 content.classList.add('hidden');
                 content.classList.remove('block');
             });
             
             // 4. Show target content
-            const targetId = btn.getAttribute('data-target');
+            const targetId = newBtn.getAttribute('data-target');
             const targetContent = document.getElementById(targetId);
             if (targetContent) {
                 targetContent.classList.remove('hidden');
@@ -52,5 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
-});
+}
+
+document.addEventListener("turbo:load", initEdukasiTabs);
+if (!window.Turbo || document.readyState === 'complete') {
+    initEdukasiTabs();
+}
 </script>

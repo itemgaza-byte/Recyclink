@@ -46,6 +46,8 @@ class AuthService
                     'city' => $data['city'],
                     'province' => $data['province'],
                     'postal_code' => $data['postal_code'],
+                    'latitude' => $data['latitude'] ?? null,
+                    'longitude' => $data['longitude'] ?? null,
                     'verification_status' => 'pending', 
                 ]);
             } else {
@@ -56,6 +58,8 @@ class AuthService
                     'city' => $data['city'],
                     'province' => $data['province'],
                     'postal_code' => $data['postal_code'],
+                    'latitude' => $data['latitude'] ?? null,
+                    'longitude' => $data['longitude'] ?? null,
                 ]);
             }
 

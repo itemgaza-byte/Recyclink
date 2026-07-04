@@ -19,10 +19,14 @@ class EnsureProfileCompleted
 
         if (!app(\App\Services\ProfileService::class)->checkProfileCompletion($user)) {
             if ($user->isSeller()) {
-                return redirect()->route('seller.profile.edit')->with('error', 'Please complete your store profile first.');
+                $fallback = route('seller.dashboard');
+                $url = request()->headers->get('referer', $fallback);
+                return redirect($url)->with('error', 'Profil toko Anda harus segera dilengkapi agar bisa menambahkan produk.');
             }
             if ($user->isBuyer()) {
-                return redirect()->route('buyer.profile.edit')->with('error', 'Please complete your profile details first.');
+                $fallback = route('buyer.dashboard');
+                $url = request()->headers->get('referer', $fallback);
+                return redirect($url)->with('error', 'Profil Anda harus dilengkapi dahulu sebelum bisa melanjutkan.');
             }
         }
 

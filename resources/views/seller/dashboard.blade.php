@@ -80,7 +80,7 @@
         <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
             <div class="flex items-center justify-between mb-6">
                 <h4 class="text-lg font-bold text-gray-900">Pesanan Masuk Terkini</h4>
-                <a href="#" class="text-brand font-bold text-sm hover:underline">Lihat Semua</a>
+                <a href="{{ route('seller.orders.index') }}" class="text-brand font-bold text-sm hover:underline">Lihat Semua</a>
             </div>
             <div class="flex flex-col items-center justify-center py-10 text-center border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -95,7 +95,7 @@
         <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6">
             <h4 class="text-lg font-bold text-gray-900 mb-6">Aksi Cepat</h4>
             <div class="grid grid-cols-2 gap-4">
-                <a href="#" class="group p-5 bg-gray-50 rounded-2xl border border-gray-100 hover:border-brand hover:bg-brand/5 transition-all text-center flex flex-col items-center">
+                <a href="{{ route('seller.listings.create') }}" class="group p-5 bg-gray-50 rounded-2xl border border-gray-100 hover:border-brand hover:bg-brand/5 transition-all text-center flex flex-col items-center">
                     <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform text-brand">
                         <i data-lucide="plus-circle" class="w-6 h-6"></i>
                     </div>

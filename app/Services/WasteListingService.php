@@ -76,15 +76,34 @@ class WasteListingService
     {
         $uploaded = [];
         
+        $cloudinaryUrl = env('CLOUDINARY_URL');
+        if ($cloudinaryUrl) {
+            $cloudinary = new \Cloudinary\Cloudinary($cloudinaryUrl);
+        } else {
+            // Fallback to separate config
+            $cloudinary = new \Cloudinary\Cloudinary([
+                'cloud' => [
+                    'cloud_name' => env('CLOUDINARY_CLOUD_NAME', 'YOUR_CLOUD_NAME_HERE'),
+                    'api_key'    => env('CLOUDINARY_API_KEY', '399941741518545'),
+                    'api_secret' => env('CLOUDINARY_API_SECRET', 'idnNflxVORnAaAbROS37ivbKibQ'),
+                ]
+            ]);
+        }
+
         foreach ($images as $index => $image) {
             if ($image instanceof \Illuminate\Http\UploadedFile) {
-                $path = $image->store('listings', 'public');
+                // Upload to Cloudinary
+                $response = $cloudinary->uploadApi()->upload($image->getRealPath(), [
+                    'folder' => 'recyclink/listings',
+                    'resource_type' => 'image',
+                ]);
+
                 $isPrimary = $index === 0 && !$listing->images()->where('is_primary', true)->exists();
 
                 $uploaded[] = ListingImage::create([
                     'listing_id' => $listing->id,
-                    'image_url' => $path,
-                    'disk' => 'public',
+                    'image_url' => $response['secure_url'], // This contains absolute Cloudinary URL
+                    'disk' => 'cloudinary',
                     'is_primary' => $isPrimary,
                     'sort_order' => $index,
                 ]);

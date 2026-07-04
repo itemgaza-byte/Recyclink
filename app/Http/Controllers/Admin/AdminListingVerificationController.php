@@ -35,40 +35,40 @@ class AdminListingVerificationController extends Controller implements HasMiddle
     }
 
     // ponytail: show listing details for review
-    public function show(WasteListing $listing)
+    public function show(WasteListing $wasteListing)
     {
-        $listing->load(['seller', 'category']);
-        return view('admin.listings.show', compact('listing'));
+        $wasteListing->load(['seller', 'category']);
+        return view('admin.listings.show', ['listing' => $wasteListing]);
     }
 
     // ponytail: approve listing
-    public function approve(Request $request, WasteListing $listing)
+    public function approve(Request $request, WasteListing $wasteListing)
     {
         try {
-            $this->verificationService->approveListing(auth()->user(), $listing, $request->input('reason'));
-            return redirect()->back()->with('success', 'Listing approved successfully.');
+            $this->verificationService->approveListing(auth()->user(), $wasteListing, $request->input('reason'));
+            return redirect()->back()->with('success', 'Listing berhasil disetujui dan ditayangkan.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
     // ponytail: reject listing
-    public function reject(RejectListingRequest $request, WasteListing $listing)
+    public function reject(RejectListingRequest $request, WasteListing $wasteListing)
     {
         try {
-            $this->verificationService->rejectListing(auth()->user(), $listing, $request->input('reason'));
-            return redirect()->back()->with('success', 'Listing rejected successfully.');
+            $this->verificationService->rejectListing(auth()->user(), $wasteListing, $request->input('reason'));
+            return redirect()->back()->with('success', 'Listing berhasil ditolak.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
     // ponytail: deactivate verified listing
-    public function deactivate(Request $request, WasteListing $listing)
+    public function deactivate(Request $request, WasteListing $wasteListing)
     {
         try {
-            $this->verificationService->deactivateListing(auth()->user(), $listing, $request->input('reason'));
-            return redirect()->back()->with('success', 'Listing deactivated successfully.');
+            $this->verificationService->deactivateListing(auth()->user(), $wasteListing, $request->input('reason'));
+            return redirect()->back()->with('success', 'Listing berhasil dinonaktifkan.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

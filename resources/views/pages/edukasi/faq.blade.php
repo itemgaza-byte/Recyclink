@@ -38,19 +38,20 @@
         </div>
 
         {{-- Accordion --}}
+        {{-- ponytail: use native HTML details/summary elements to remove JavaScript toggle code --}}
         <div class="space-y-4 text-left">
             @foreach($faqs as $index => $faq)
-            <div id="faq-item-{{ $index }}" class="bg-white border {{ $faq['active'] ? 'border-brand/30 shadow-sm' : 'border-gray-200' }} rounded-xl overflow-hidden transition-all duration-300">
-                <button class="w-full px-6 py-5 flex items-center justify-between focus:outline-none" onclick="toggleFaq({{ $index }})">
+            <details class="group bg-white border border-gray-200 open:border-brand/30 open:shadow-sm rounded-xl overflow-hidden transition-all duration-300" {{ $faq['active'] ? 'open' : '' }}>
+                <summary class="w-full px-6 py-5 flex items-center justify-between focus:outline-none list-none cursor-pointer">
                     <span class="font-bold text-gray-900 text-left">{{ $faq['question'] }}</span>
-                    <i data-lucide="chevron-down" id="faq-icon-{{ $index }}" class="w-5 h-5 shrink-0 ml-4 {{ $faq['active'] ? 'text-brand rotate-180' : 'text-gray-400' }} transition-transform duration-300"></i>
-                </button>
-                <div id="faq-content-{{ $index }}" class="px-6 pb-6 {{ $faq['active'] ? 'block' : 'hidden' }}">
+                    <i data-lucide="chevron-down" class="w-5 h-5 shrink-0 ml-4 text-gray-400 group-open:text-brand group-open:rotate-180 transition-transform duration-300"></i>
+                </summary>
+                <div class="px-6 pb-6">
                     <p class="text-gray-500 text-sm leading-relaxed">
                         {{ $faq['answer'] }}
                     </p>
                 </div>
-            </div>
+            </details>
             @endforeach
         </div>
         
@@ -64,33 +65,3 @@
         
     </div>
 </section>
-
-<script>
-    function toggleFaq(index) {
-        const content = document.getElementById('faq-content-' + index);
-        const icon = document.getElementById('faq-icon-' + index);
-        const item = document.getElementById('faq-item-' + index);
-        
-        if (content.classList.contains('hidden')) {
-            // Open
-            content.classList.remove('hidden');
-            content.classList.add('block');
-            
-            icon.classList.add('rotate-180', 'text-brand');
-            icon.classList.remove('text-gray-400');
-            
-            item.classList.add('border-brand/30', 'shadow-sm');
-            item.classList.remove('border-gray-200');
-        } else {
-            // Close
-            content.classList.add('hidden');
-            content.classList.remove('block');
-            
-            icon.classList.remove('rotate-180', 'text-brand');
-            icon.classList.add('text-gray-400');
-            
-            item.classList.remove('border-brand/30', 'shadow-sm');
-            item.classList.add('border-gray-200');
-        }
-    }
-</script>

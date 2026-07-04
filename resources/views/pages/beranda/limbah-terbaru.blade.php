@@ -3,15 +3,6 @@
     Lokasi: resources/views/pages/beranda/limbah-terbaru.blade.php
 ════════════════════════════════════════════════════════ --}}
 
-@php
-$recentListings = [
-    ['id'=>1,  'title'=>'Styrofoam / EPS Bekas – Bongkar Gudang',       'categoryLabel'=>'Plastik',        'city'=>'Surakarta',  'price'=>3000,  'unit'=>'kg',    'stock'=>8000,   'image'=>'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=600&q=80'],
-    ['id'=>10, 'title'=>'Aluminium Kaleng Cacah – Siap Lebur',           'categoryLabel'=>'Aluminium',      'city'=>'Tangerang',  'price'=>14500, 'unit'=>'kg',    'stock'=>8000,   'image'=>'https://images.unsplash.com/photo-1558346547-4439467bd1d5?w=600&q=80'],
-    ['id'=>11, 'title'=>'Minyak Jelantah (UCO) – Food Grade',            'categoryLabel'=>'Minyak',         'city'=>'Jakarta',    'price'=>8500,  'unit'=>'liter', 'stock'=>10000,  'image'=>'https://images.unsplash.com/photo-1510498468133-c97f0e0dcdbe?w=600&q=80'],
-    ['id'=>9,  'title'=>'Serbuk Kayu Halus – Biomassa Energi',           'categoryLabel'=>'Kayu & Biomassa','city'=>'Medan',      'price'=>400,   'unit'=>'kg',    'stock'=>50000,  'image'=>'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&q=80'],
-];
-@endphp
-
 <section class="bg-white py-16 md:py-24" id="limbah-terbaru">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -38,20 +29,20 @@ $recentListings = [
 
         {{-- Card Grid --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            @foreach($recentListings as $listing)
-                <a href="{{ url('/marketplace/'.$listing['id']) }}"
+            @forelse($recentListings as $listing)
+                <a href="{{ url('/marketplace/'.$listing->id) }}"
                    class="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col">
 
                     {{-- Image: full-bleed dengan badge kategori overlay --}}
                     <div class="relative h-52 bg-gray-100 shrink-0 overflow-hidden">
                         <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                             src="{{ $listing['image'] }}"
-                             alt="{{ $listing['title'] }}"
+                             src="{{ $listing->primaryImage ? $listing->primaryImage->url : '' }}"
+                             alt="{{ $listing->title }}"
                              onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-gray-100\'><i data-lucide=\'image\' class=\'w-10 h-10 text-gray-300\'></i></div>'" />
 
                         {{-- Category badge overlay --}}
                         <span class="absolute top-3 left-3 bg-brand text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
-                            {{ $listing['categoryLabel'] }}
+                            {{ $listing->category->category_name ?? 'Lainnya' }}
                         </span>
                     </div>
 
@@ -59,39 +50,39 @@ $recentListings = [
                     <div class="p-4 flex flex-col grow">
 
                         {{-- Title --}}
-                        <h5 class="text-base font-bold text-gray-900 line-clamp-2 leading-snug mb-1 group-hover:text-brand transition-colors">
-                            {{ $listing['title'] }}
-                        </h5>
+                        <h3 class="text-base font-bold text-gray-900 mb-1 leading-snug line-clamp-2 group-hover:text-brand transition-colors">
+                            {{ $listing->title }}
+                        </h3>
 
                         {{-- Location --}}
-                        <div class="flex items-center gap-1 text-xs text-gray-400 mb-4">
-                            <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0"></i>
-                            <span>{{ $listing['city'] }}</span>
+                        <div class="flex items-center gap-1.5 text-xs text-gray-400 mb-4">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                            <span class="truncate">{{ $listing->city }}</span>
                         </div>
 
-                        {{-- Spacer --}}
                         <div class="grow"></div>
 
-                        {{-- Footer: Price + Arrow Button --}}
-                        <div class="flex items-end justify-between gap-3">
+                        {{-- Price & Stock --}}
+                        <div class="flex items-end justify-between mt-2">
                             <div>
-                                <p class="text-xl font-bold text-gray-900 leading-tight">
-                                    Rp {{ number_format($listing['price'], 0, ',', '.') }}
-                                    <span class="text-xs font-normal text-gray-400">/ {{ $listing['unit'] }}</span>
+                                <p class="text-xl font-bold text-gray-900 leading-tight group-hover:text-brand transition-colors">
+                                    Rp {{ number_format($listing->price_per_unit, 0, ',', '.') }}<span class="text-xs font-normal text-gray-400"> / {{ $listing->unit }}</span>
                                 </p>
                                 <p class="text-xs text-gray-400 mt-0.5">
-                                    Stok: {{ number_format($listing['stock'], 0, ',', '.') }} {{ $listing['unit'] }}
+                                    Stok: {{ number_format($listing->quantity, 0, ',', '.') }} {{ $listing->unit }}
                                 </p>
                             </div>
-                            {{-- Tombol ikon panah bulat hijau --}}
-                            <span class="shrink-0 w-10 h-10 rounded-full bg-brand group-hover:bg-[#5b7a48] text-white flex items-center justify-center transition-colors shadow-sm">
-                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                            </span>
+                            <div class="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center group-hover:bg-brand transition-colors shrink-0">
+                                <i data-lucide="arrow-right" class="w-4 h-4 text-brand group-hover:text-white"></i>
+                            </div>
                         </div>
-
                     </div>
                 </a>
-            @endforeach
+            @empty
+                <div class="col-span-1 sm:col-span-2 lg:col-span-4 text-center py-16 bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
+                    <p class="text-gray-500">Belum ada listing yang ditayangkan.</p>
+                </div>
+            @endforelse
         </div>
 
     </div>

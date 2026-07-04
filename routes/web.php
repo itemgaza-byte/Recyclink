@@ -30,6 +30,7 @@ use App\Http\Controllers\Buyer\BuyerOrderController;
 use App\Http\Controllers\Buyer\BuyerPaymentController;
 use App\Http\Controllers\Buyer\BuyerFavoriteController;
 use App\Http\Controllers\Buyer\BuyerReviewController;
+use App\Http\Controllers\Buyer\BuyerCartController;
 
 // Admin Controller Imports
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -50,6 +51,7 @@ Route::get('/education', [EducationController::class, 'index'])->name('education
 Route::get('/education/{educationContent:slug}', [EducationController::class, 'show'])->name('education.show');
 Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marketplace.index');
 Route::get('/marketplace/{wasteListing}', [MarketplaceController::class, 'show'])->name('marketplace.show');
+Route::get('/toko/{user}', [MarketplaceController::class, 'store'])->name('marketplace.store');
 Route::get('/tentang', [HomeController::class, 'tentang'])->name('tentang');
 
 /*
@@ -90,7 +92,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/user/verifikasi/acknowledge', function () {
         $user = auth()->user();
         if ($user->isActive()) {
-            $user->update(['email_verified_at' => now()]);
+            $user->email_verified_at = now();
+            $user->save();
             return redirect()->route('choose.role')->with('success', 'Selamat datang di Recyclink!');
         }
         return redirect()->route('verification.pending');
@@ -147,10 +150,29 @@ Route::group([
     Route::get('/profile/edit', [SellerProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [SellerProfileController::class, 'update'])->name('profile.update');
 
+    // Notifications
+    Route::get('/notifications', [App\Http\Controllers\Seller\NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/{id}/read', [App\Http\Controllers\Seller\NotificationController::class, 'markAsRead'])->name('notifications.read');
+
     // Routes requiring completed profile
     Route::middleware(['profile.completed'])->group(function () {
         // Listings index & detail
         Route::get('/listings', [SellerWasteListingController::class, 'index'])->name('listings.index');
+        // Routes requiring BOTH completed profile AND seller verification
+        Route::middleware(['seller.verified'])->group(function () {
+            // Waste Listings management (resource except index/show already defined above)
+            Route::get('/listings/create', [SellerWasteListingController::class, 'create'])->name('listings.create');
+            Route::post('/listings', [SellerWasteListingController::class, 'store'])->name('listings.store');
+            Route::get('/listings/{wasteListing}/edit', [SellerWasteListingController::class, 'edit'])->name('listings.edit');
+            Route::put('/listings/{wasteListing}', [SellerWasteListingController::class, 'update'])->name('listings.update');
+            Route::delete('/listings/{wasteListing}', [SellerWasteListingController::class, 'destroy'])->name('listings.destroy');
+            
+            Route::patch('/listings/{wasteListing}/availability', [SellerWasteListingController::class, 'changeAvailability'])->name('listings.availability');
+
+            // Accept orders
+            Route::patch('/orders/{order}/accept', [SellerOrderController::class, 'accept'])->name('orders.accept')->middleware('order.participant');
+        });
+
         Route::get('/listings/{wasteListing}', [SellerWasteListingController::class, 'show'])->name('listings.show');
 
         // Orders List & Show
@@ -170,21 +192,6 @@ Route::group([
         Route::get('/withdrawals', [SellerWithdrawalController::class, 'index'])->name('withdrawals.index');
         Route::get('/withdrawals/create', [SellerWithdrawalController::class, 'create'])->name('withdrawals.create');
         Route::post('/withdrawals', [SellerWithdrawalController::class, 'store'])->name('withdrawals.store');
-
-        // Routes requiring BOTH completed profile AND seller verification
-        Route::middleware(['seller.verified'])->group(function () {
-            // Waste Listings management (resource except index/show already defined above)
-            Route::get('/listings/create', [SellerWasteListingController::class, 'create'])->name('listings.create');
-            Route::post('/listings', [SellerWasteListingController::class, 'store'])->name('listings.store');
-            Route::get('/listings/{wasteListing}/edit', [SellerWasteListingController::class, 'edit'])->name('listings.edit');
-            Route::put('/listings/{wasteListing}', [SellerWasteListingController::class, 'update'])->name('listings.update');
-            Route::delete('/listings/{wasteListing}', [SellerWasteListingController::class, 'destroy'])->name('listings.destroy');
-            
-            Route::patch('/listings/{wasteListing}/availability', [SellerWasteListingController::class, 'changeAvailability'])->name('listings.availability');
-
-            // Accept orders
-            Route::patch('/orders/{order}/accept', [SellerOrderController::class, 'accept'])->name('orders.accept')->middleware('order.participant');
-        });
     });
 });
 
@@ -204,6 +211,10 @@ Route::group([
     Route::get('/profile', [BuyerProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile/edit', [BuyerProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [BuyerProfileController::class, 'update'])->name('profile.update');
+
+    // Notifications
+    Route::get('/notifications', [App\Http\Controllers\Buyer\NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/{id}/read', [App\Http\Controllers\Buyer\NotificationController::class, 'markAsRead'])->name('notifications.read');
 
     // Routes requiring completed profile
     Route::middleware(['profile.completed'])->group(function () {
@@ -230,6 +241,11 @@ Route::group([
         Route::get('/favorites', [BuyerFavoriteController::class, 'index'])->name('favorites.index');
         Route::post('/favorites/{wasteListing}', [BuyerFavoriteController::class, 'store'])->name('favorites.store');
         Route::delete('/favorites/{wasteListing}', [BuyerFavoriteController::class, 'destroy'])->name('favorites.destroy');
+
+        // Cart
+        Route::get('/cart', [BuyerCartController::class, 'index'])->name('cart.index');
+        Route::post('/cart/{wasteListing}', [BuyerCartController::class, 'store'])->name('cart.store');
+        Route::delete('/cart/{wasteListing}', [BuyerCartController::class, 'destroy'])->name('cart.destroy');
     });
 });
 
@@ -249,6 +265,7 @@ Route::group([
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
     Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus'])->name('users.updateStatus');
+    Route::patch('/users/{user}/verify-seller-profile', [AdminUserController::class, 'verifySellerProfile'])->name('users.verifySellerProfile');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
 
     // Listing Verification

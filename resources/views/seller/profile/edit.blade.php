@@ -6,7 +6,7 @@
 @section('content')
 <div class="max-w-4xl mx-auto">
     <!-- Back Link -->
-    <a href="{{ route('seller.dashboard') }}" class="inline-flex items-center text-gray-500 hover:text-gray-900 mb-6 font-medium transition-colors text-sm">
+    <a href="{{ route('seller.profile.index') }}" class="inline-flex items-center text-gray-500 hover:text-gray-900 mb-6 font-medium transition-colors text-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
         Kembali ke Halaman Profil
     </a>
@@ -16,17 +16,6 @@
         <h3 class="text-3xl font-extrabold text-gray-900 mb-2">Lengkapi Profil Usaha 👋</h3>
         <p class="text-gray-500">Pastikan informasi profil Anda terbaru untuk memudahkan proses verifikasi dan transaksi di sistem kami.</p>
     </div>
-
-    @if(session('success'))
-        <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl">
-            {{ session('success') }}
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
-            {{ session('error') }}
-        </div>
-    @endif
 
     @php
         $user = auth()->user();
@@ -155,35 +144,79 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Latitude -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Latitude (Lokasi Maps)</label>
-                    <div class="relative">
-                        <input type="text" name="latitude" placeholder="-6.200000" value="{{ old('latitude', $profile->latitude ?? '') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-brand focus:ring focus:ring-brand/20 transition-all py-3 pl-10 px-4 text-gray-900">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                            <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i>
-                        </div>
+            <!-- Titik Lokasi Maps -->
+            <div class="mt-8 p-5 bg-gray-50 border border-gray-100 rounded-2xl flex flex-col gap-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-900 mb-1">Titik Lokasi (Maps)</label>
+                        <p class="text-sm text-gray-500">Isi koordinat secara manual atau gunakan deteksi otomatis dari browser.</p>
                     </div>
-                    @error('latitude') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                    
+                    <button type="button" id="btn-detect-location" onclick="getLocation()" class="px-5 py-2.5 bg-gray-900 text-white hover:bg-gray-800 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-sm whitespace-nowrap w-full sm:w-auto">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        Deteksi Lokasi
+                    </button>
                 </div>
-
-                <!-- Longitude -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Longitude (Lokasi Maps)</label>
-                    <div class="relative">
-                        <input type="text" name="longitude" placeholder="106.816666" value="{{ old('longitude', $profile->longitude ?? '') }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-brand focus:ring focus:ring-brand/20 transition-all py-3 pl-10 px-4 text-gray-900">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                            <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i>
-                        </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Latitude</label>
+                        <input type="text" name="latitude" id="lat-input" value="{{ old('latitude', $profile->latitude ?? '') }}" placeholder="Contoh: -6.2088" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-brand focus:ring focus:ring-brand/20 transition-all py-3 px-4 text-gray-900 font-mono text-sm">
+                        @error('latitude') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                     </div>
-                    @error('longitude') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Longitude</label>
+                        <input type="text" name="longitude" id="lng-input" value="{{ old('longitude', $profile->longitude ?? '') }}" placeholder="Contoh: 106.8456" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-brand focus:ring focus:ring-brand/20 transition-all py-3 px-4 text-gray-900 font-mono text-sm">
+                        @error('longitude') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                    </div>
                 </div>
             </div>
 
+            <script>
+                function getLocation() {
+                    const btn = document.getElementById('btn-detect-location');
+                    const originalText = btn.innerHTML;
+                    
+                    if (navigator.geolocation) {
+                        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Mendeteksi...';
+                        btn.disabled = true;
+                        
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                document.getElementById('lat-input').value = position.coords.latitude;
+                                document.getElementById('lng-input').value = position.coords.longitude;
+                                
+                                btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Berhasil Dideteksi';
+                                btn.classList.replace('bg-gray-900', 'bg-gray-800');
+                                
+                                setTimeout(() => {
+                                    btn.innerHTML = originalText;
+                                    btn.disabled = false;
+                                    btn.classList.replace('bg-gray-800', 'bg-gray-900');
+                                    lucide.createIcons();
+                                }, 3000);
+                            },
+                            function(error) {
+                                btn.innerHTML = '<i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i> Gagal';
+                                alert('Harap izinkan akses lokasi pada browser Anda.');
+                                
+                                setTimeout(() => {
+                                    btn.innerHTML = originalText;
+                                    btn.disabled = false;
+                                    lucide.createIcons();
+                                }, 3000);
+                            },
+                            { timeout: 10000, enableHighAccuracy: true }
+                        );
+                    } else {
+                        alert('Browser Anda tidak mendukung Geolocation.');
+                    }
+                }
+            </script>
+
             <!-- Buttons -->
             <div class="pt-8 flex items-center justify-end gap-6 mt-4">
-                <a href="{{ route('seller.dashboard') }}" class="text-gray-700 font-bold hover:text-gray-900 px-2 py-2 transition-all">
+                <a href="{{ route('seller.profile.index') }}" class="text-gray-700 font-bold hover:text-gray-900 px-2 py-2 transition-all">
                     Batal
                 </a>
                 <button type="submit" class="px-6 py-3 bg-[#719149] text-white font-bold rounded-xl hover:bg-[#607d3c] transition-all inline-flex items-center gap-2">

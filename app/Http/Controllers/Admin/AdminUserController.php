@@ -54,8 +54,60 @@ class AdminUserController extends Controller implements HasMiddleware
                 $updateData['rejection_reason'] = null;
             }
             
-            $user->update($updateData);
+            $user->forceFill($updateData)->save();
+            
+            // Auto verify seller profile if user is activated
+            if ($status === User::STATUS_ACTIVE && $user->isSeller() && $user->sellerProfile) {
+                $user->sellerProfile->update([
+                    'verification_status' => \App\Models\SellerProfile::VERIFICATION_VERIFIED,
+                    'verified_at' => now(),
+                ]);
+            }
+            
+            // Send Notification
+            if ($status === User::STATUS_ACTIVE) {
+                $user->notifications()->create([
+                    'title' => 'Profil Diverifikasi',
+                    'message' => 'Profil Anda telah berhasil diverifikasi oleh Admin. Anda sekarang dapat mengakses semua fitur.',
+                    'notification_type' => 'account_status',
+                    'data' => ['status' => 'active', 'message' => 'Profil Anda telah berhasil diverifikasi oleh Admin. Anda sekarang dapat mengakses semua fitur.']
+                ]);
+            } elseif ($status === User::STATUS_INACTIVE) {
+                $user->notifications()->create([
+                    'title' => 'Pendaftaran Ditolak',
+                    'message' => 'Pendaftaran Profil Anda ditolak.',
+                    'notification_type' => 'account_status',
+                    'data' => ['status' => 'rejected', 'message' => 'Pendaftaran Profil Anda ditolak.', 'reason' => $request->input('rejection_reason')]
+                ]);
+            } elseif ($status === User::STATUS_SUSPENDED) {
+                $user->notifications()->create([
+                    'title' => 'Akun Ditangguhkan',
+                    'message' => 'Akun Anda telah ditangguhkan oleh Admin.',
+                    'notification_type' => 'account_status',
+                    'data' => ['status' => 'suspended', 'message' => 'Akun Anda telah ditangguhkan oleh Admin.', 'reason' => $request->input('rejection_reason')]
+                ]);
+            }
+
             return redirect()->back()->with('success', 'Status pengguna berhasil diperbarui.');
+        } catch (RecyclinkException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    // ponytail: verify seller profile
+    public function verifySellerProfile(User $user)
+    {
+        try {
+            if (!$user->isSeller() || !$user->sellerProfile) {
+                throw new RecyclinkException("Pengguna ini bukan penjual atau belum memiliki profil toko.");
+            }
+
+            $user->sellerProfile->update([
+                'verification_status' => \App\Models\SellerProfile::VERIFICATION_VERIFIED,
+                'verified_at' => now(),
+            ]);
+
+            return redirect()->back()->with('success', 'Profil toko penjual berhasil diverifikasi.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

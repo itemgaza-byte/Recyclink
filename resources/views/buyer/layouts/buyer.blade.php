@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="turbo-prefetch" content="true">
     <title>@yield('title', 'Dashboard Pembeli - Recyclink')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4/dist/turbo.es2017-umd.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     @stack('styles')
 </head>
@@ -34,19 +36,38 @@
                 <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                 Dashboard
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+            <a href="{{ route('buyer.orders.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold {{ request()->routeIs('buyer.orders.*') ? 'bg-brand/10 text-brand' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
                 <i data-lucide="shopping-cart" class="w-5 h-5"></i>
                 Pesanan Saya
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+            <a href="{{ route('buyer.cart.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold {{ request()->routeIs('buyer.cart.*') ? 'bg-brand/10 text-brand' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                Keranjang
+            </a>
+            <a href="{{ route('buyer.favorites.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold {{ request()->routeIs('buyer.favorites.*') ? 'bg-brand/10 text-brand' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
                 <i data-lucide="heart" class="w-5 h-5"></i>
                 Tersimpan
+            </a>
+            <a href="{{ route('conversations.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold {{ request()->routeIs('conversations.*') ? 'bg-brand/10 text-brand' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
+                <i data-lucide="message-circle" class="w-5 h-5"></i>
+                Pesan
             </a>
             <a href="{{ route('buyer.profile.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold {{ request()->routeIs('buyer.profile.*') ? 'bg-brand/10 text-brand' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
                 <i data-lucide="user" class="w-5 h-5"></i>
                 Profil
             </a>
+
+            <div class="pt-4 mt-4 border-t border-gray-100">
+                <a href="{{ route('marketplace.index') }}" class="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-gray-700 bg-gray-50 hover:bg-brand hover:text-white border border-gray-200 hover:border-brand transition-all group">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="store" class="w-5 h-5"></i>
+                        Beli Limbah
+                    </div>
+                    <i data-lucide="arrow-right" class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors"></i>
+                </a>
+            </div>
         </nav>
+
 
         <div class="p-6 border-t border-gray-100">
             <form action="{{ route('logout') }}" method="POST">
@@ -72,9 +93,7 @@
             </div>
             
             <div class="flex items-center gap-5">
-                <button class="p-2.5 text-gray-400 hover:text-brand relative rounded-xl hover:bg-gray-50 transition-colors">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                </button>
+                @include('layouts.notification-dropdown')
                 
                 <div class="flex items-center gap-3 pl-5 border-l border-gray-200">
                     <div class="text-right hidden md:block">
@@ -86,8 +105,21 @@
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto flex flex-col">
-            <div class="p-6 lg:p-10 flex-1">
+        <main class="flex-1 overflow-y-auto flex flex-col relative">
+            <!-- Skeleton Loader -->
+            <div id="dashboard-skeleton" class="absolute inset-0 bg-[#F8FAFC] z-50 hidden p-6 lg:p-10">
+                <div class="animate-pulse flex flex-col gap-6">
+                    <div class="h-8 bg-gray-200 rounded-lg w-1/4 mb-4"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="h-32 bg-gray-200 rounded-2xl"></div>
+                        <div class="h-32 bg-gray-200 rounded-2xl"></div>
+                        <div class="h-32 bg-gray-200 rounded-2xl"></div>
+                    </div>
+                    <div class="h-64 bg-gray-200 rounded-2xl mt-4"></div>
+                </div>
+            </div>
+
+            <div class="p-6 lg:p-10 flex-1 transition-opacity duration-200" id="dashboard-content">
                 @yield('content')
             </div>
             <!-- Footer -->
@@ -98,12 +130,19 @@
     </div>
 
     <script>
-        lucide.createIcons();
-        const sidebar = document.getElementById('sidebar');
-        const openBtn = document.getElementById('open-sidebar');
-        const closeBtn = document.getElementById('close-sidebar');
-        const backdrop = document.getElementById('mobile-sidebar-backdrop');
-        function toggleSidebar() {
+        document.addEventListener("turbo:load", initBuyerScripts);
+        if (!window.Turbo) initBuyerScripts();
+
+        function initBuyerScripts() {
+            lucide.createIcons();
+            const sidebar = document.getElementById('sidebar');
+            const openBtn = document.getElementById('open-sidebar');
+            const closeBtn = document.getElementById('close-sidebar');
+            const backdrop = document.getElementById('mobile-sidebar-backdrop');
+            
+            if (!sidebar) return;
+
+            function toggleSidebar() {
             const isOpen = !sidebar.classList.contains('-translate-x-full');
             if (isOpen) {
                 sidebar.classList.add('-translate-x-full');
@@ -118,7 +157,22 @@
         openBtn?.addEventListener('click', toggleSidebar);
         closeBtn?.addEventListener('click', toggleSidebar);
         backdrop?.addEventListener('click', toggleSidebar);
+
+
+        // Skeleton logic
+        document.addEventListener("turbo:visit", function() {
+            document.getElementById('dashboard-skeleton')?.classList.remove('hidden');
+            document.getElementById('dashboard-content')?.classList.add('opacity-0');
+        });
+        document.addEventListener("turbo:load", function() {
+            setTimeout(() => {
+                document.getElementById('dashboard-skeleton')?.classList.add('hidden');
+                document.getElementById('dashboard-content')?.classList.remove('opacity-0');
+            }, 50); // slight delay for smooth transition
+        });
+        } // close initBuyerScripts
     </script>
     @stack('scripts')
+    @include('layouts.global-loader')
 </body>
 </html>

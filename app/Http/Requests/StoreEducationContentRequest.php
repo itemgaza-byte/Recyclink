@@ -20,6 +20,7 @@ class StoreEducationContentRequest extends FormRequest
             'thumbnail' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'content_type' => 'required|string|in:article,video,guide',
             'status' => 'nullable|string|in:draft,published,archived',
+            'excerpt' => 'nullable|string|max:500',
         ];
     }
 }

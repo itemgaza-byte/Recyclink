@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="turbo-prefetch" content="true">
     <title>Daftar - Recyclink</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4/dist/turbo.es2017-umd.js"></script>
 </head>
 <body class="bg-white flex min-h-screen antialiased">
     
@@ -273,6 +275,34 @@
                                placeholder="10110">
                     </div>
 
+                    <!-- Titik Lokasi Maps -->
+                    <div class="sm:col-span-2 hidden role-common-field mt-2 p-5 bg-gray-50 border border-gray-100 rounded-2xl flex flex-col gap-5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 mb-1">Titik Lokasi (Maps)</label>
+                                <p class="text-sm text-gray-500">Isi koordinat secara manual atau gunakan deteksi otomatis dari browser.</p>
+                            </div>
+                            
+                            <button type="button" id="btn-detect-location" onclick="getLocation()" class="px-5 py-2.5 bg-gray-900 text-white hover:bg-gray-800 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-sm whitespace-nowrap w-full sm:w-auto">
+                                <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                Deteksi Lokasi
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Latitude</label>
+                                <input type="text" name="latitude" id="lat-input" value="{{ old('latitude') }}" placeholder="Contoh: -6.2088" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-brand focus:ring focus:ring-brand/20 transition-all py-3 px-4 text-gray-900 font-mono text-sm">
+                                @error('latitude') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wide">Longitude</label>
+                                <input type="text" name="longitude" id="lng-input" value="{{ old('longitude') }}" placeholder="Contoh: 106.8456" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-brand focus:ring focus:ring-brand/20 transition-all py-3 px-4 text-gray-900 font-mono text-sm">
+                                @error('longitude') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="mt-6">
@@ -297,7 +327,10 @@
     </div>
     
     <script>
-        lucide.createIcons();
+        document.addEventListener("turbo:load", function() {
+            lucide.createIcons();
+        });
+        if (!window.Turbo) lucide.createIcons();
 
         function toggleRoleFields() {
             const role = document.querySelector('input[name="role"]:checked')?.value;
@@ -386,6 +419,47 @@
                 input.required = false;
             }
         }
+
+        function getLocation() {
+            const btn = document.getElementById('btn-detect-location');
+            const originalText = btn.innerHTML;
+            
+            if (navigator.geolocation) {
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Mendeteksi...';
+                btn.disabled = true;
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        document.getElementById('lat-input').value = position.coords.latitude;
+                        document.getElementById('lng-input').value = position.coords.longitude;
+                        
+                        btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i> Berhasil Dideteksi';
+                        btn.classList.replace('bg-gray-900', 'bg-gray-800');
+                        
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                            btn.classList.replace('bg-gray-800', 'bg-gray-900');
+                            lucide.createIcons();
+                        }, 3000);
+                    },
+                    function(error) {
+                        btn.innerHTML = '<i data-lucide="x-circle" class="w-4 h-4 text-red-400"></i> Gagal';
+                        alert('Harap izinkan akses lokasi pada browser Anda.');
+                        
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.disabled = false;
+                            lucide.createIcons();
+                        }, 3000);
+                    },
+                    { timeout: 10000, enableHighAccuracy: true }
+                );
+            } else {
+                alert('Browser Anda tidak mendukung Geolocation.');
+            }
+        }
     </script>
+    @include('layouts.global-loader')
 </body>
 </html>

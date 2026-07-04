@@ -4,12 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="turbo-prefetch" content="true">
     <title>@yield('title', 'Dashboard Penjual - Recyclink')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4/dist/turbo.es2017-umd.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     @stack('styles')
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased font-sans flex h-screen overflow-hidden">
+
+    <!-- Global Toast Notifications -->
+    @if(session('success') || session('error'))
+        <div id="global-toast" class="fixed top-24 right-6 z-[60] flex flex-col gap-3 min-w-[320px] max-w-sm" style="animation: fade-in-down 0.4s ease-out;">
+            @if(session('success'))
+                <div class="bg-white border-l-4 border-emerald-500 p-4 rounded-xl shadow-xl flex items-start gap-3 relative pr-10">
+                    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500 mt-0.5 shrink-0"></i>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-bold text-gray-900">Berhasil</h4>
+                        <p class="text-sm text-gray-600 mt-0.5 leading-snug">{{ session('success') }}</p>
+                    </div>
+                    <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors absolute top-2 right-2">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="bg-white border-l-4 border-red-500 p-4 rounded-xl shadow-xl flex items-start gap-3 relative pr-10">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 mt-0.5 shrink-0"></i>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-bold text-gray-900">Perhatian</h4>
+                        <p class="text-sm text-gray-600 mt-0.5 leading-snug">{{ session('error') }}</p>
+                    </div>
+                    <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors absolute top-2 right-2">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            @endif
+        </div>
+        
+        <script>
+            setTimeout(() => {
+                const toast = document.getElementById('global-toast');
+                if (toast) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    toast.style.transition = 'all 0.4s ease-out';
+                    setTimeout(() => toast.remove(), 400);
+                }
+            }, 6000);
+        </script>
+        
+        <style>
+            @keyframes fade-in-down {
+                0% { opacity: 0; transform: translateY(-20px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+        </style>
+    @endif
 
     <!-- Mobile Sidebar Backdrop -->
     <div id="mobile-sidebar-backdrop" class="fixed inset-0 bg-gray-900/50 z-40 lg:hidden hidden transition-opacity opacity-0"></div>
@@ -34,15 +86,19 @@
                 <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                 Dashboard
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+            <a href="{{ route('seller.listings.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold {{ request()->routeIs('seller.listings.*') ? 'bg-brand/10 text-brand' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
                 <i data-lucide="package" class="w-5 h-5"></i>
                 Limbah Saya
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+            <a href="{{ route('seller.orders.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold {{ request()->routeIs('seller.orders.*') ? 'bg-brand/10 text-brand' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
                 <i data-lucide="clipboard-list" class="w-5 h-5"></i>
                 Pesanan
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+            <a href="{{ route('conversations.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold {{ request()->routeIs('conversations.*') ? 'bg-brand/10 text-brand' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
+                <i data-lucide="message-circle" class="w-5 h-5"></i>
+                Pesan
+            </a>
+            <a href="{{ route('seller.wallet.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold {{ request()->routeIs('seller.wallet.*') || request()->routeIs('seller.withdrawals.*') ? 'bg-brand/10 text-brand' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-colors">
                 <i data-lucide="wallet" class="w-5 h-5"></i>
                 Dompet
             </a>
@@ -50,7 +106,18 @@
                 <i data-lucide="user" class="w-5 h-5"></i>
                 Profil Toko
             </a>
+
+            <div class="pt-4 mt-4 border-t border-gray-100">
+                <a href="{{ route('marketplace.index') }}" target="_blank" class="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-gray-700 bg-gray-50 hover:bg-brand hover:text-white border border-gray-200 hover:border-brand transition-all group">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="store" class="w-5 h-5"></i>
+                        Cek Marketplace
+                    </div>
+                    <i data-lucide="external-link" class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors"></i>
+                </a>
+            </div>
         </nav>
+
 
         <div class="p-6 border-t border-gray-100">
             <form action="{{ route('logout') }}" method="POST">
@@ -76,9 +143,7 @@
             </div>
             
             <div class="flex items-center gap-5">
-                <button class="p-2.5 text-gray-400 hover:text-brand relative rounded-xl hover:bg-gray-50 transition-colors">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                </button>
+                @include('layouts.notification-dropdown')
                 
                 <div class="flex items-center gap-3 pl-5 border-l border-gray-200">
                     <div class="text-right hidden md:block">
@@ -90,8 +155,21 @@
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto flex flex-col">
-            <div class="p-6 lg:p-10 flex-1">
+        <main class="flex-1 overflow-y-auto flex flex-col relative">
+            <!-- Skeleton Loader -->
+            <div id="dashboard-skeleton" class="absolute inset-0 bg-[#F8FAFC] z-50 hidden p-6 lg:p-10">
+                <div class="animate-pulse flex flex-col gap-6">
+                    <div class="h-8 bg-gray-200 rounded-lg w-1/4 mb-4"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="h-32 bg-gray-200 rounded-2xl"></div>
+                        <div class="h-32 bg-gray-200 rounded-2xl"></div>
+                        <div class="h-32 bg-gray-200 rounded-2xl"></div>
+                    </div>
+                    <div class="h-64 bg-gray-200 rounded-2xl mt-4"></div>
+                </div>
+            </div>
+
+            <div class="p-6 lg:p-10 flex-1 transition-opacity duration-200" id="dashboard-content">
                 @yield('content')
             </div>
             <!-- Footer -->
@@ -102,12 +180,19 @@
     </div>
 
     <script>
-        lucide.createIcons();
-        const sidebar = document.getElementById('sidebar');
-        const openBtn = document.getElementById('open-sidebar');
-        const closeBtn = document.getElementById('close-sidebar');
-        const backdrop = document.getElementById('mobile-sidebar-backdrop');
-        function toggleSidebar() {
+        document.addEventListener("turbo:load", initSellerScripts);
+        if (!window.Turbo) initSellerScripts();
+
+        function initSellerScripts() {
+            lucide.createIcons();
+            const sidebar = document.getElementById('sidebar');
+            const openBtn = document.getElementById('open-sidebar');
+            const closeBtn = document.getElementById('close-sidebar');
+            const backdrop = document.getElementById('mobile-sidebar-backdrop');
+            
+            if (!sidebar) return; // Prevent errors on pages without sidebar
+
+            function toggleSidebar() {
             const isOpen = !sidebar.classList.contains('-translate-x-full');
             if (isOpen) {
                 sidebar.classList.add('-translate-x-full');
@@ -122,7 +207,23 @@
         openBtn?.addEventListener('click', toggleSidebar);
         closeBtn?.addEventListener('click', toggleSidebar);
         backdrop?.addEventListener('click', toggleSidebar);
+
+
+        // Skeleton logic
+        document.addEventListener("turbo:visit", function() {
+            document.getElementById('dashboard-skeleton')?.classList.remove('hidden');
+            document.getElementById('dashboard-content')?.classList.add('opacity-0');
+        });
+        document.addEventListener("turbo:load", function() {
+            setTimeout(() => {
+                document.getElementById('dashboard-skeleton')?.classList.add('hidden');
+                document.getElementById('dashboard-content')?.classList.remove('opacity-0');
+            }, 50); // slight delay for smooth transition
+        });
+        
+        } // close initSellerScripts
     </script>
     @stack('scripts')
+    @include('layouts.global-loader')
 </body>
 </html>

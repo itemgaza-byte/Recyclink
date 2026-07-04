@@ -48,8 +48,8 @@ class ChatService
                 if ($seller) {
                     $this->notificationService->sendToUser(
                         $seller,
-                        "New Message",
-                        "{$buyer->name} sent a message regarding '{$listing->title}': {$message}",
+                        "Pesan Baru dari {$buyer->name}",
+                        "{$buyer->name} mengirim pesan terkait '{$listing->title}': {$message}",
                         "chat",
                         $conversation->id
                     );
@@ -91,13 +91,12 @@ class ChatService
 
             $conversation->update(['last_message_at' => now()]);
 
-            $recipientId = ($conversation->buyer_id === $sender->id) ? $conversation->seller_id : $conversation->buyer_id;
-            $recipient = User::find($recipientId);
+            $recipient = ($conversation->buyer_id === $sender->id) ? $conversation->seller : $conversation->buyer;
             if ($recipient) {
                 $this->notificationService->sendToUser(
                     $recipient,
-                    "New Message from {$sender->name}",
-                    $messageText ?? "Sent an image",
+                    "Pesan Baru dari {$sender->name}",
+                    $messageText ?? "Mengirimkan gambar",
                     "chat",
                     $conversation->id
                 );

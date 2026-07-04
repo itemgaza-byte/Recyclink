@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="turbo-prefetch" content="true">
     <title>@yield('title', 'Admin Dashboard - Recyclink')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4/dist/turbo.es2017-umd.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     @stack('styles')
 </head>
@@ -86,10 +88,7 @@
             
             <div class="flex items-center gap-5">
                 <!-- Notifications -->
-                <button class="p-2.5 text-gray-400 hover:text-brand relative rounded-xl hover:bg-gray-50 transition-colors">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                </button>
+                @include('layouts.notification-dropdown')
                 
                 <!-- Profile -->
                 <div class="flex items-center gap-3 pl-5 border-l border-gray-200 cursor-pointer hover:opacity-80 transition-opacity">
@@ -103,8 +102,21 @@
         </header>
 
         <!-- Main Content Area -->
-        <main class="flex-1 overflow-y-auto flex flex-col">
-            <div class="p-6 lg:p-10 flex-1">
+        <main class="flex-1 overflow-y-auto flex flex-col relative">
+            <!-- Skeleton Loader -->
+            <div id="dashboard-skeleton" class="absolute inset-0 bg-[#F8FAFC] z-50 hidden p-6 lg:p-10">
+                <div class="animate-pulse flex flex-col gap-6">
+                    <div class="h-8 bg-gray-200 rounded-lg w-1/4 mb-4"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="h-32 bg-gray-200 rounded-2xl"></div>
+                        <div class="h-32 bg-gray-200 rounded-2xl"></div>
+                        <div class="h-32 bg-gray-200 rounded-2xl"></div>
+                    </div>
+                    <div class="h-64 bg-gray-200 rounded-2xl mt-4"></div>
+                </div>
+            </div>
+
+            <div class="p-6 lg:p-10 flex-1 transition-opacity duration-200" id="dashboard-content">
                 @yield('content')
             </div>
             <!-- Footer -->
@@ -116,32 +128,49 @@
 
     <!-- Scripts -->
     <script>
-        lucide.createIcons();
+        document.addEventListener("turbo:load", initAdminScripts);
+        if (!window.Turbo) initAdminScripts();
 
-        // Sidebar Toggle Logic for Mobile
-        const sidebar = document.getElementById('sidebar');
-        const openBtn = document.getElementById('open-sidebar');
-        const closeBtn = document.getElementById('close-sidebar');
-        const backdrop = document.getElementById('mobile-sidebar-backdrop');
-
-        function toggleSidebar() {
-            const isOpen = !sidebar.classList.contains('-translate-x-full');
-            if (isOpen) {
-                sidebar.classList.add('-translate-x-full');
-                backdrop.classList.add('hidden');
-                setTimeout(() => backdrop.classList.remove('opacity-100'), 10);
-            } else {
-                sidebar.classList.remove('-translate-x-full');
-                backdrop.classList.remove('hidden');
-                setTimeout(() => backdrop.classList.add('opacity-100'), 10);
+        function initAdminScripts() {
+            lucide.createIcons();
+            const sidebar = document.getElementById('sidebar');
+            const openBtn = document.getElementById('open-sidebar');
+            const closeBtn = document.getElementById('close-sidebar');
+            const backdrop = document.getElementById('mobile-sidebar-backdrop');
+            
+            if (!sidebar) return;
+            
+            function toggleSidebar() {
+                const isOpen = !sidebar.classList.contains('-translate-x-full');
+                if (isOpen) {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('hidden');
+                    setTimeout(() => backdrop.classList.remove('opacity-100'), 10);
+                } else {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('hidden');
+                    setTimeout(() => backdrop.classList.add('opacity-100'), 10);
+                }
             }
+            openBtn?.addEventListener('click', toggleSidebar);
+            closeBtn?.addEventListener('click', toggleSidebar);
+            backdrop?.addEventListener('click', toggleSidebar);
+            
+            // Skeleton logic
+            document.addEventListener("turbo:visit", function() {
+                document.getElementById('dashboard-skeleton')?.classList.remove('hidden');
+                document.getElementById('dashboard-content')?.classList.add('opacity-0');
+            });
+            document.addEventListener("turbo:load", function() {
+                setTimeout(() => {
+                    document.getElementById('dashboard-skeleton')?.classList.add('hidden');
+                    document.getElementById('dashboard-content')?.classList.remove('opacity-0');
+                }, 50); // slight delay for smooth transition
+            });
         }
-
-        openBtn?.addEventListener('click', toggleSidebar);
-        closeBtn?.addEventListener('click', toggleSidebar);
-        backdrop?.addEventListener('click', toggleSidebar);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @stack('scripts')
+    @include('layouts.global-loader')
 </body>
 </html>

@@ -24,6 +24,8 @@ class RegisterRequest extends FormRequest
             'city' => 'required|string|max:100',
             'province' => 'required|string|max:100',
             'postal_code' => 'required|string|max:20',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             // Buyer specific fields
             'company_name' => 'required_if:role,buyer|nullable|string|max:255',
             'industry_type' => 'required_if:role,buyer|nullable|string|max:100',

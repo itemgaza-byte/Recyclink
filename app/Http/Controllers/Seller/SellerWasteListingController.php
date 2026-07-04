@@ -48,7 +48,13 @@ class SellerWasteListingController extends Controller implements HasMiddleware
     {
         $this->authorize('create', WasteListing::class);
         try {
-            $this->listingService->store($request->validated());
+            $validated = $request->validated();
+            $listing = $this->listingService->createListing(auth()->user(), collect($validated)->except('images')->toArray());
+            
+            if ($request->hasFile('images')) {
+                $this->listingService->uploadListingImages($listing, $request->file('images'));
+            }
+            
             return redirect()->route('seller.listings.index')->with('success', 'Listing submitted for admin review.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -79,7 +85,13 @@ class SellerWasteListingController extends Controller implements HasMiddleware
         $this->authorize('update', $wasteListing);
 
         try {
-            $this->listingService->update($wasteListing, $request->validated());
+            $validated = $request->validated();
+            $this->listingService->updateListing(auth()->user(), $wasteListing, collect($validated)->except('images')->toArray());
+            
+            if ($request->hasFile('images')) {
+                $this->listingService->uploadListingImages($wasteListing, $request->file('images'));
+            }
+            
             return redirect()->route('seller.listings.index')->with('success', 'Listing updated successfully.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -92,7 +104,7 @@ class SellerWasteListingController extends Controller implements HasMiddleware
         $this->authorize('delete', $wasteListing);
 
         try {
-            $this->listingService->destroy($wasteListing);
+            $this->listingService->deleteListing(auth()->user(), $wasteListing);
             return redirect()->route('seller.listings.index')->with('success', 'Listing deleted successfully.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -105,7 +117,7 @@ class SellerWasteListingController extends Controller implements HasMiddleware
         $this->authorize('update', $wasteListing);
 
         try {
-            $this->listingService->changeAvailability($wasteListing, $request->validated());
+            $this->listingService->changeAvailability(auth()->user(), $wasteListing, $request->validated()['status']);
             return redirect()->back()->with('success', 'Listing status changed successfully.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
