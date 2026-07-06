@@ -33,9 +33,14 @@
     <div id="main-content" class="hidden opacity-0 transition-opacity duration-500">
         <!-- Back Button -->
         <div class="mb-8">
-          <a href="{{ route('marketplace.index') }}" id="btn-back" class="inline-flex items-center text-sm font-semibold text-gray-500 hover:text-brand transition-colors">
-            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            <span id="back-label">Kembali ke Marketplace</span>
+          @php
+              $ref = request('ref', 'marketplace');
+              $backLabel = $ref === 'store' ? 'Kembali ke Toko' : 'Kembali ke Marketplace';
+              $backFallbackUrl = $ref === 'store' ? route('marketplace.store', $listing->seller->id) : route('marketplace.index');
+          @endphp
+          <a href="{{ $backFallbackUrl }}" id="btn-back" class="inline-flex items-center text-sm font-semibold text-gray-500 hover:text-brand transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7h18"/></svg>
+            <span id="back-label">{{ $backLabel }}</span>
           </a>
         </div>
 
@@ -88,6 +93,30 @@
                 <p class="text-sm font-bold text-gray-900">Rp {{ number_format($listing->price_per_unit, 0, ',', '.') }} / {{ $listing->unit }}</p>
               </div>
 
+              {{-- Min. Order --}}
+              <div>
+                <p class="text-xs text-brand-hover uppercase font-semibold tracking-wider mb-1">Min. Order</p>
+                <p class="text-sm font-bold text-gray-900">{{ $listing->min_order ?? '1' }} {{ $listing->unit }}</p>
+              </div>
+
+              {{-- Lokasi --}}
+              <div class="col-span-2 sm:col-span-3">
+                <p class="text-xs text-brand-hover uppercase font-semibold tracking-wider mb-1">Lokasi</p>
+                <p class="text-sm font-bold text-gray-900">
+                  {{ $sellerAddress ? $sellerAddress.', '.$sellerCity : $sellerCity }}
+                </p>
+              </div>
+
+              {{-- Kontak --}}
+              <div>
+                <p class="text-xs text-brand-hover uppercase font-semibold tracking-wider mb-1">Kontak Penjual</p>
+                @if($sellerPhone)
+                <p class="text-sm font-bold text-gray-900">{{ $sellerPhone }}</p>
+                @else
+                <p class="text-sm font-bold text-gray-400 italic">Tidak tersedia</p>
+                @endif
+              </div>
+
               {{-- Status --}}
               <div>
                 <p class="text-xs text-brand-hover uppercase font-semibold tracking-wider mb-1">Status</p>
@@ -100,30 +129,6 @@
                   <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span> Habis
                 </span>
                 @endif
-              </div>
-
-              {{-- Lokasi --}}
-              <div class="col-span-2 sm:col-span-1">
-                <p class="text-xs text-brand-hover uppercase font-semibold tracking-wider mb-1">Lokasi</p>
-                <p class="text-sm font-bold text-gray-900">
-                  {{ $sellerAddress ? $sellerAddress.', '.$sellerCity : $sellerCity }}
-                </p>
-              </div>
-
-              {{-- Kontak --}}
-              <div>
-                <p class="text-xs text-brand-hover uppercase font-semibold tracking-wider mb-1">Kontak Penjual</p>
-                @if($sellerPhone)
-                <a href="tel:{{ $sellerPhone }}" class="text-sm font-bold text-brand hover:underline">{{ $sellerPhone }}</a>
-                @else
-                <p class="text-sm font-bold text-gray-400 italic">Tidak tersedia</p>
-                @endif
-              </div>
-
-              {{-- Min. Order --}}
-              <div>
-                <p class="text-xs text-brand-hover uppercase font-semibold tracking-wider mb-1">Min. Order</p>
-                <p class="text-sm font-bold text-gray-900">{{ $listing->min_order ?? '1' }} {{ $listing->unit }}</p>
               </div>
 
             </div>
@@ -139,7 +144,13 @@
           {{-- Seller Card --}}
           <div class="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-8 flex items-center justify-between">
             <div class="flex items-center gap-4">
-              <img src="https://ui-avatars.com/api/?name={{ urlencode($listing->seller->sellerProfile->business_name ?? $listing->seller->name) }}&background=14b8a6&color=fff" alt="Toko" class="w-14 h-14 rounded-full shadow-sm">
+              @if($listing->seller->avatar)
+                  <img src="{{ asset('storage/'.$listing->seller->avatar) }}" alt="Toko" class="w-14 h-14 rounded-full shadow-sm object-cover">
+              @else
+                  <div class="w-14 h-14 bg-brand text-white flex items-center justify-center text-xl font-bold rounded-full shadow-sm">
+                      {{ strtoupper(substr($listing->seller->sellerProfile->business_name ?? $listing->seller->name, 0, 2)) }}
+                  </div>
+              @endif
               <div>
                 <h4 class="text-base font-bold text-gray-900">{{ $listing->seller->sellerProfile->business_name ?? $listing->seller->name }}</h4>
                 <p class="text-xs text-gray-500 flex items-center gap-1 mt-0.5"><i data-lucide="map-pin" class="w-3 h-3"></i> {{ $listing->city ?? ($listing->seller->sellerProfile->city ?? '-') }}</p>
@@ -221,10 +232,10 @@
                 @endif
               @else
                 {{-- Guest --}}
-                <a href="{{ route('login') }}" class="flex-1 h-12 bg-brand flex justify-center gap-2 items-center text-white px-4 rounded-xl font-semibold hover:bg-brand-hover transition-all duration-200 shadow">
+                <button type="button" onclick="showToast('Anda tidak bisa memesan, segera login terlebih dahulu atau daftar.')" class="w-full flex-1 h-12 bg-brand flex justify-center gap-2 items-center text-white px-4 rounded-xl font-semibold hover:bg-brand-hover transition-all duration-200 shadow">
                   <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                   <span class="truncate">Masuk untuk Memesan</span>
-                </a>
+                </button>
               @endauth
             </div>
           </div>
@@ -312,19 +323,15 @@ input[type="number"]::-webkit-outer-spin-button {
 @push('scripts')
 <script>
 (function() {
-    // 1. Smart back button logic (progressive override)
+    // 1. Smart back button logic (history.back to preserve state)
     const backBtn = document.getElementById('btn-back');
-    const backLabel = document.getElementById('back-label');
-    const ref = document.referrer;
-    if (backBtn && ref && ref.startsWith(window.location.origin)) {
-        const path = ref.replace(window.location.origin, '');
-        if (path === '/' || path === '') {
-            backBtn.href = '/';
-            if (backLabel) backLabel.textContent = 'Kembali ke Beranda';
-        } else if (path.startsWith('/toko/')) {
-            backBtn.href = path;
-            if (backLabel) backLabel.textContent = 'Kembali ke Toko';
-        }
+    if (backBtn) {
+        backBtn.addEventListener('click', function(e) {
+            if (window.history.length > 1) {
+                e.preventDefault();
+                window.history.back();
+            }
+        });
     }
 
     // Helper: Format Rupiah

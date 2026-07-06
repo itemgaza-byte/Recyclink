@@ -23,7 +23,7 @@
 
                     {{-- Kategori Accordion --}}
                     <details class="group mb-5 border-b border-gray-100 pb-5" open>
-                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none">
+                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none focus:outline-none">
                             Kategori
                             <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform"></i>
                         </summary>
@@ -39,7 +39,7 @@
 
                     {{-- Lokasi Accordion --}}
                     <details class="group mb-5 border-b border-gray-100 pb-5" open>
-                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none">
+                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none focus:outline-none">
                             Lokasi
                             <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform"></i>
                         </summary>
@@ -53,29 +53,29 @@
                     </details>
 
                     {{-- Harga Accordion --}}
-                    <details class="group mb-5 border-b border-gray-100 pb-5" open>
-                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none">
+                    <details id="filter-harga-section" class="group mb-5 border-b border-gray-100 pb-5 transition-all duration-300" open>
+                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none focus:outline-none">
                             Harga
                             <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform"></i>
                         </summary>
                         <div class="mt-4 flex items-center gap-2">
                             <div class="relative w-full">
-                                <span class="absolute left-2.5 top-2.5 text-xs text-gray-400 font-medium">Rp</span>
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">Rp</span>
                                 <input type="number" id="harga-min" placeholder="Min"
-                                    class="w-full text-sm border border-gray-200 rounded-lg pl-7 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition placeholder-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                    class="w-full text-sm border border-gray-200 rounded-lg pl-8 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition placeholder-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                             </div>
                             <span class="text-gray-300 font-medium">–</span>
                             <div class="relative w-full">
-                                <span class="absolute left-2.5 top-2.5 text-xs text-gray-400 font-medium">Rp</span>
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">Rp</span>
                                 <input type="number" id="harga-max" placeholder="Max"
-                                    class="w-full text-sm border border-gray-200 rounded-lg pl-7 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition placeholder-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                    class="w-full text-sm border border-gray-200 rounded-lg pl-8 pr-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition placeholder-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                             </div>
                         </div>
                     </details>
 
                     {{-- Minimal Volume Accordion --}}
-                    <details class="group mb-5 border-b border-gray-100 pb-5">
-                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none">
+                    <details id="filter-volume-section" class="group mb-5 border-b border-gray-100 pb-5 transition-all duration-300">
+                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none focus:outline-none">
                             Minimal Volume
                             <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform"></i>
                         </summary>
@@ -86,8 +86,8 @@
                     </details>
 
                     {{-- Status Accordion --}}
-                    <details class="group mb-5" open>
-                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none">
+                    <details id="filter-status-section" class="group mb-5 transition-all duration-300" open>
+                        <summary class="flex items-center justify-between font-bold text-gray-900 cursor-pointer list-none text-sm select-none focus:outline-none">
                             Status
                             <i data-lucide="chevron-down" class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform"></i>
                         </summary>
@@ -123,7 +123,7 @@
 
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <p id="result-count" class="text-sm text-gray-500">
-                        Menampilkan <span class="font-semibold text-gray-800" id="count-number">{{ $listings->count() }}</span> <span id="count-label">produk limbah</span>
+                        Menampilkan <span class="font-semibold text-gray-800" id="count-number">0</span> <span id="count-label">produk limbah</span>
                     </p>
                     <div class="flex items-center gap-2 shrink-0">
                         <span class="text-sm text-gray-500">Urutkan:</span>
@@ -153,7 +153,7 @@
 
 @push('scripts')
 <script>
-    let state = { tab: 'produk', categories: [], searchLokasi:'', volumeMin:null, hargaMin:null, hargaMax:null, sort:'terbaru', page:1, perPage:9 };
+    let state = { tab: 'produk', categories: [], searchLokasi:'', volumeMin:null, hargaMin:null, hargaMax:null, statusAvailable:true, sort:'terbaru', page:1, perPage:9 };
 
     function debounce(fn, delay) {
         let timeout;
@@ -173,6 +173,7 @@
         if (state.volumeMin) params.append('volume_min', state.volumeMin);
         if (state.hargaMin) params.append('harga_min', state.hargaMin);
         if (state.hargaMax) params.append('harga_max', state.hargaMax);
+        params.append('available_only', state.statusAvailable ? 1 : 0);
         state.categories.forEach(cat => params.append('categories[]', cat));
 
         try {
@@ -239,7 +240,7 @@
             return;
         }
         grid.innerHTML = data.map(l => `
-            <a href="/marketplace/${l.id}" class="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col">
+            <a href="/marketplace/${l.id}?ref=marketplace" class="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col">
                 <div class="relative h-52 bg-gray-100 shrink-0 overflow-hidden">
                     <img src="${l.image}" alt="${l.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.style.display='none'">
                     <span class="absolute top-3 left-3 bg-brand text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">${l.categoryLabel}</span>
@@ -330,6 +331,21 @@
             const isProd = tab === 'produk';
             el('tab-produk').className = isProd ? "tab-btn active-tab border-brand text-brand border-b-2 py-4 px-1 text-sm font-bold flex items-center gap-2" : "tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-4 px-1 text-sm font-medium flex items-center gap-2 transition-colors";
             el('tab-toko').className = !isProd ? "tab-btn active-tab border-brand text-brand border-b-2 py-4 px-1 text-sm font-bold flex items-center gap-2" : "tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-4 px-1 text-sm font-medium flex items-center gap-2 transition-colors";
+            
+            // Toggle filter visibility
+            ['filter-harga-section', 'filter-volume-section', 'filter-status-section'].forEach(id => {
+                const section = el(id);
+                if (section) {
+                    if (isProd) {
+                        section.classList.remove('hidden');
+                        if (id !== 'filter-volume-section') section.setAttribute('open', '');
+                    } else {
+                        section.classList.add('hidden');
+                        section.removeAttribute('open');
+                    }
+                }
+            });
+
             refresh();
         };
 
@@ -352,13 +368,15 @@
         el('volume-min')?.addEventListener('input', e => { state.volumeMin = e.target.value ? parseFloat(e.target.value) : null; debouncedRefresh(); });
         el('harga-min')?.addEventListener('input', e => { state.hargaMin = e.target.value ? parseInt(e.target.value) : null; debouncedRefresh(); });
         el('harga-max')?.addEventListener('input', e => { state.hargaMax = e.target.value ? parseInt(e.target.value) : null; debouncedRefresh(); });
+        el('filter-status')?.addEventListener('change', e => { state.statusAvailable = e.target.checked; refresh(); });
         el('sort-select')?.addEventListener('change', e => { state.sort = e.target.value; refresh(); });
         el('btn-apply')?.addEventListener('click', refresh);
 
         el('btn-reset')?.addEventListener('click', () => {
-            state = { tab: 'produk', categories: [], searchLokasi:'', volumeMin:null, hargaMin:null, hargaMax:null, sort:'terbaru', page:1, perPage:9 };
+            state = { ...state, categories: [], searchLokasi:'', volumeMin:null, hargaMin:null, hargaMax:null, statusAvailable:true, sort:'terbaru', page:1 };
             document.querySelectorAll('.category-filter').forEach(cb => cb.checked = false);
             ['search-lokasi', 'volume-min', 'harga-min', 'harga-max'].forEach(id => { if(el(id)) el(id).value = ''; });
+            if(el('filter-status')) el('filter-status').checked = true;
             if(el('sort-select')) el('sort-select').value = 'terbaru';
             refresh();
         });

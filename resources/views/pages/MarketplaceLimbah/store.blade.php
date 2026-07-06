@@ -9,9 +9,6 @@
                 <button class="border-brand text-brand border-b-2 py-4 px-1 text-sm font-bold flex items-center gap-2">
                     Produk
                 </button>
-                <button class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 py-4 px-1 text-sm font-medium flex items-center gap-2 transition-colors">
-                    Ulasan
-                </button>
             </nav>
         </div>
     </div>
@@ -27,7 +24,9 @@
                         @if($user->avatar)
                             <img src="{{ asset('storage/'.$user->avatar) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
                         @else
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode($user->sellerProfile->business_name ?? $user->name) }}&background=14b8a6&color=fff" alt="{{ $user->name }}" class="w-full h-full object-cover">
+                            <div class="w-full h-full bg-brand text-white flex items-center justify-center text-4xl font-bold">
+                                {{ strtoupper(substr($user->sellerProfile->business_name ?? $user->name, 0, 2)) }}
+                            </div>
                         @endif
                         <div class="absolute bottom-0 right-0 bg-brand text-white rounded-full p-1 border-2 border-white">
                             <i data-lucide="star" class="w-3 h-3 fill-white"></i>
@@ -41,15 +40,18 @@
                             {{ $user->sellerProfile->city ?? 'Lokasi tidak diketahui' }}
                         </p>
                         <div class="flex flex-wrap gap-2 md:gap-3">
-                            <button class="bg-brand hover:bg-brand-hover text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                            @auth
+                            <form method="POST" action="{{ route('conversations.start', $user->id) }}">
+                                @csrf
+                                <button type="submit" class="bg-brand hover:bg-brand-hover text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                                    Chat Penjual
+                                </button>
+                            </form>
+                            @else
+                            <button type="button" onclick="showToast('Anda harus login terlebih dahulu untuk melakukan chat.')" class="bg-brand hover:bg-brand-hover text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
                                 Chat Penjual
                             </button>
-                            <button class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg transition-colors flex items-center justify-center">
-                                <i data-lucide="store" class="w-4 h-4"></i>
-                            </button>
-                            <button class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg transition-colors flex items-center justify-center">
-                                <i data-lucide="share-2" class="w-4 h-4"></i>
-                            </button>
+                            @endauth
                         </div>
                     </div>
                 </div>
@@ -67,10 +69,10 @@
                     </div>
                     <ul class="p-2 space-y-1 bg-white">
                         <li>
-                            <a href="#" class="block px-4 py-2.5 rounded-lg bg-gray-100 text-gray-900 font-semibold text-sm">Semua Produk</a>
+                            <a href="{{ route('marketplace.store', $user->id) }}" class="block px-4 py-2.5 rounded-lg {{ !isset($tab) || $tab !== 'terjual' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600 hover:bg-gray-50 font-medium' }} text-sm">Semua Produk</a>
                         </li>
                         <li>
-                            <a href="#" class="block px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors font-medium text-sm">Produk Terjual</a>
+                            <a href="{{ route('marketplace.store', ['user' => $user->id, 'tab' => 'terjual']) }}" class="block px-4 py-2.5 rounded-lg {{ isset($tab) && $tab === 'terjual' ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600 hover:bg-gray-50 font-medium' }} text-sm">Produk Terjual</a>
                         </li>
                     </ul>
                 </div>
@@ -79,7 +81,7 @@
             {{-- Main Products Grid --}}
             <div class="flex-1 min-w-0">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-                    <h2 class="text-xl font-bold text-gray-900">Semua Produk</h2>
+                    <h2 class="text-xl font-bold text-gray-900">{{ isset($tab) && $tab === 'terjual' ? 'Produk Terjual' : 'Semua Produk' }}</h2>
                     <div class="flex items-center gap-2 shrink-0">
                         <span class="text-sm text-gray-500">Urutkan:</span>
                         <select class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition cursor-pointer">
@@ -95,31 +97,34 @@
                     <div class="w-16 h-16 mx-auto bg-gray-50 rounded-full flex items-center justify-center mb-3">
                         <i data-lucide="package-x" class="w-8 h-8 text-gray-300"></i>
                     </div>
-                    <p class="text-gray-500 font-medium">Toko ini belum memiliki produk limbah.</p>
+                    <p class="text-gray-500 font-medium">{{ isset($tab) && $tab === 'terjual' ? 'Toko ini belum memiliki produk terjual.' : 'Toko ini belum memiliki produk limbah.' }}</p>
                 </div>
                 @else
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     @foreach($listings as $l)
-                    <a href="{{ route('marketplace.show', $l->id) }}" class="group bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col">
-                        <div class="relative h-44 bg-gray-100 shrink-0 overflow-hidden">
-                            <img src="{{ $l->primaryImage ? $l->primaryImage->url : '' }}" alt="{{ $l->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                            
-                            {{-- Promo Badge like in Tokopedia --}}
-                            <div class="absolute top-0 left-0 bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-br-lg z-10">
-                                >50%
-                            </div>
+                    <a href="{{ route('marketplace.show', $l->id) }}?ref=store" class="group bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col">
+                        <div class="relative h-52 bg-gray-100 shrink-0 overflow-hidden">
+                            <img src="{{ $l->primaryImage ? (str_starts_with($l->primaryImage->image_url, 'http') ? $l->primaryImage->image_url : asset('storage/'.$l->primaryImage->image_url)) : '' }}" alt="{{ $l->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <span class="absolute top-3 left-3 bg-brand text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">{{ $l->category->category_name ?? 'Limbah' }}</span>
                         </div>
-                        <div class="p-3 flex flex-col grow">
-                            <h5 class="text-sm text-gray-700 line-clamp-2 leading-snug mb-1 group-hover:text-brand transition-colors">{{ $l->title }}</h5>
-                            <p class="text-base font-bold text-gray-900 mt-1">Rp {{ number_format($l->price_per_unit, 0, ',', '.') }}</p>
-                            
-                            {{-- Fake Promo --}}
-                            <div class="flex items-center gap-1 mt-1">
-                                <span class="bg-rose-100 text-rose-500 text-[9px] font-bold px-1 rounded">Hemat s.d 15%</span>
+                        <div class="p-4 flex flex-col grow">
+                            <h5 class="text-base font-bold text-gray-900 line-clamp-2 leading-snug mb-1 group-hover:text-brand transition-colors">{{ $l->title }}</h5>
+                            <div class="flex items-center gap-1 text-xs text-gray-400 mb-4">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                <span>{{ $l->city }}</span>
                             </div>
-
-                            <div class="flex items-center gap-1 text-[11px] text-gray-500 mt-2">
-                                {{ $l->sold_quantity ?? 0 }} terjual
+                            <div class="grow"></div>
+                            <div class="flex items-end justify-between gap-3">
+                                <div>
+                                    <p class="text-xl font-bold text-brand leading-tight">
+                                        Rp {{ number_format($l->price_per_unit, 0, ',', '.') }} <span class="text-xs font-normal text-gray-400">/ {{ $l->unit }}</span>
+                                    </p>
+                                    <div class="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
+                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                                        Stok: {{ number_format($l->quantity, 0, ',', '.') }} {{ $l->unit }}
+                                    </div>
+                                </div>
+                                <span class="shrink-0 text-xs font-semibold border border-gray-200 text-gray-600 group-hover:bg-brand group-hover:text-white group-hover:border-brand px-4 py-1.5 rounded-lg transition-all">Detail</span>
                             </div>
                         </div>
                     </a>

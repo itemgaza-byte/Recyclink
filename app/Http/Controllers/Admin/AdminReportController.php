@@ -25,9 +25,16 @@ class AdminReportController extends Controller implements HasMiddleware
     }
 
     // ponytail: view reports overview page
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.reports.index');
+        $report = $this->reportService->getAnalyticsReport($request->all());
+        return view('admin.reports.index', compact('report'));
+    }
+
+    public function print(Request $request)
+    {
+        $report = $this->reportService->getAnalyticsReport($request->all());
+        return view('admin.reports.print', compact('report'));
     }
 
     // ponytail: view transaction report

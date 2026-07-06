@@ -27,8 +27,8 @@
                     $steps = [
                         ['step' => '01', 'icon' => 'search',        'title' => 'Cari Limbah',          'desc' => 'Masukkan jenis limbah yang kamu miliki atau gunakan filter kategori untuk menemukan listing yang tepat.'],
                         ['step' => '02', 'icon' => 'message-circle','title' => 'Hubungi Pengepul',       'desc' => 'Pilih pengepul terverifikasi dan mulai negosiasi harga langsung melalui platform chat kami.'],
-                        ['step' => '03', 'icon' => 'map-pin',       'title' => 'Jadwalkan Pickup',      'desc' => 'Tentukan waktu dan lokasi penjemputan. Pengepul akan datang ke tempatmu.'],
-                        ['step' => '04', 'icon' => 'check-circle',  'title' => 'Daur Ulang & Untung',   'desc' => 'Limbahmu terambil, kamu mendapat bayaran, dan bumi semakin hijau. Win-win!'],
+                        ['step' => '03', 'icon' => 'map-pin',       'title' => 'Jadwalkan COD',      'desc' => 'Tentukan waktu dan lokasi pertemuan sesuai kesepakatan. Lakukan pengecekan limbah secara langsung.'],
+                        ['step' => '04', 'icon' => 'check-circle',  'title' => 'Daur Ulang & Untung',   'desc' => 'Limbah diserahterimakan, kamu mendapat bayaran, dan bumi semakin hijau. Win-win!'],
                     ];
                 @endphp
 

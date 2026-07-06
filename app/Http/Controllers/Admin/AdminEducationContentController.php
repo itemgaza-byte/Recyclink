@@ -45,7 +45,7 @@ class AdminEducationContentController extends Controller implements HasMiddlewar
         $this->authorize('create', EducationContent::class);
         try {
             $this->educationService->store($request->validated());
-            return redirect()->route('admin.education.index')->with('success', 'Article created as draft.');
+            return redirect()->route('admin.education-contents.index')->with('success', 'Article created as draft.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -62,7 +62,7 @@ class AdminEducationContentController extends Controller implements HasMiddlewar
         $this->authorize('update', $educationContent);
         try {
             $this->educationService->update($educationContent, $request->validated());
-            return redirect()->route('admin.education.index')->with('success', 'Article updated successfully.');
+            return redirect()->route('admin.education-contents.index')->with('success', 'Article updated successfully.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -73,7 +73,7 @@ class AdminEducationContentController extends Controller implements HasMiddlewar
         $this->authorize('delete', $educationContent);
         try {
             $this->educationService->destroy($educationContent);
-            return redirect()->route('admin.education.index')->with('success', 'Article deleted successfully.');
+            return redirect()->route('admin.education-contents.index')->with('success', 'Article deleted successfully.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

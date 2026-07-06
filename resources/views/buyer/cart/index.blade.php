@@ -143,9 +143,12 @@
                     <span class="text-lg font-bold text-gray-900">Rp{{ number_format($totalPrice ?? 0, 0, ',', '.') }}</span>
                 </div>
                 
-                <button class="w-full py-3 bg-brand text-white font-bold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
-                    Beli ({{ $totalQty ?? 0 }})
-                </button>
+                <form action="{{ route('buyer.cart.checkout') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="w-full py-3 bg-brand text-white font-bold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
+                        Beli ({{ $totalQty ?? 0 }})
+                    </button>
+                </form>
             </div>
         </div>
         

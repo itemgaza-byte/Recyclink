@@ -5,20 +5,50 @@
             {{-- Left: Contact Form --}}
             <div class="bg-white rounded-3xl border border-gray-200 p-8 sm:p-10 shadow-sm">
                 <h2 class="text-3xl font-extrabold text-gray-900 mb-8 tracking-tight">Hubungi Kami</h2>
+                @if(session('success'))
+                    <div id="toast-success" class="fixed top-24 right-5 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-xl shadow-lg border border-gray-100 animate-[slideIn_0.3s_ease-out] z-50 transition-all duration-300" role="alert">
+                        <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        </div>
+                        <div class="ml-3 text-sm font-medium text-gray-800">{{ session('success') }}</div>
+                        <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 transition-colors" onclick="document.getElementById('toast-success').remove()" aria-label="Close">
+                            <span class="sr-only">Close</span>
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    
+                    <script>
+                        setTimeout(() => {
+                            const toast = document.getElementById('toast-success');
+                            if (toast) {
+                                toast.style.opacity = '0';
+                                setTimeout(() => toast.remove(), 300);
+                            }
+                        }, 5000);
+                    </script>
+                    
+                    <style>
+                        @keyframes slideIn {
+                            from { transform: translateX(100%); opacity: 0; }
+                            to { transform: translateX(0); opacity: 1; }
+                        }
+                    </style>
+                @endif
                 
-                <form action="#" method="POST" class="space-y-6">
+                <form action="{{ route('kontak.submit') }}" method="POST" class="space-y-6">
+                    @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {{-- Nama Lengkap --}}
                         <div>
                             <label for="name" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-2">Nama Lengkap</label>
-                            <input type="text" id="name" name="name" placeholder="John Doe" 
+                            <input type="text" id="name" name="name" placeholder="John Doe" required
                                 class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all placeholder-gray-400">
                         </div>
                         
                         {{-- Email --}}
                         <div>
                             <label for="email" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-2">Email</label>
-                            <input type="email" id="email" name="email" placeholder="john@company.com" 
+                            <input type="email" id="email" name="email" placeholder="john@company.com" required
                                 class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all placeholder-gray-400">
                         </div>
                     </div>
@@ -26,14 +56,14 @@
                     {{-- Subjek --}}
                     <div>
                         <label for="subject" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-2">Subjek</label>
-                        <input type="text" id="subject" name="subject" placeholder="Kolaborasi Industri" 
+                        <input type="text" id="subject" name="subject" placeholder="Kolaborasi Industri" required
                             class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all placeholder-gray-400">
                     </div>
                     
                     {{-- Pesan --}}
                     <div>
                         <label for="message" class="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-2">Pesan</label>
-                        <textarea id="message" name="message" rows="5" placeholder="Bagaimana kami bisa membantu Anda?" 
+                        <textarea id="message" name="message" rows="5" placeholder="Bagaimana kami bisa membantu Anda?" required
                             class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all placeholder-gray-400 resize-none"></textarea>
                     </div>
                     
@@ -98,7 +128,7 @@
                         <div>
                             <h4 class="font-bold text-gray-900 mb-1">Email Dukungan</h4>
                             <p class="text-gray-600 text-sm leading-relaxed">
-                                hello@recyclink.com
+                                therecyclink@gmail.com
                             </p>
                         </div>
                     </div>

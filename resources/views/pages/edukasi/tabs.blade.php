@@ -1,4 +1,4 @@
-<div class="bg-white border-b border-gray-200 sticky top-[64px] z-40">
+<div class="bg-white border-b border-gray-200 sticky top-[80px] z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-center gap-6 sm:gap-10 overflow-x-auto no-scrollbar" id="edukasi-tabs">
             

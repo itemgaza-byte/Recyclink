@@ -31,6 +31,15 @@ class MarketplaceController extends Controller
                         $q->where('city', 'like', '%' . $request->input('lokasi') . '%');
                     });
                 }
+
+                if ($request->has('categories')) {
+                    $catNames = (array)$request->input('categories');
+                    $query->whereHas('wasteListings', function($q) use ($catNames) {
+                        $q->whereHas('category', function($q2) use ($catNames) {
+                            $q2->whereIn(\DB::raw('LOWER(category_name)'), array_map('strtolower', $catNames));
+                        });
+                    });
+                }
                 
                 $paginator = $query->paginate(9);
                 $items = collect($paginator->items())->map(function($s) {
@@ -39,12 +48,16 @@ class MarketplaceController extends Controller
                         'name' => $s->sellerProfile->business_name ?? $s->name,
                         'city' => $s->sellerProfile->city ?? 'Lokasi tidak diketahui',
                         'type' => $s->sellerProfile->business_type ?? 'Toko',
-                        'avatar' => $s->avatar ? (str_starts_with($s->avatar, 'http') ? $s->avatar : asset('storage/'.$s->avatar)) : 'https://ui-avatars.com/api/?name='.urlencode($s->name).'&background=14b8a6&color=fff',
+                        'avatar' => $s->avatar ? (str_starts_with($s->avatar, 'http') ? $s->avatar : asset('storage/'.$s->avatar)) : 'https://ui-avatars.com/api/?name='.urlencode($s->name).'&background=7A9C59&color=fff',
                     ];
                 });
             } else {
-                $query = WasteListing::verified()->available()->with(['category', 'primaryImage', 'seller.sellerProfile']);
+                $query = WasteListing::verified()->with(['category', 'primaryImage', 'seller.sellerProfile']);
                 
+                if ($request->input('available_only', 1) == 1) {
+                    $query->available();
+                }
+
                 if ($request->has('categories')) {
                     $catNames = (array)$request->input('categories');
                     $query->whereHas('category', function($q) use ($catNames) {
@@ -112,7 +125,7 @@ class MarketplaceController extends Controller
         return view('pages.MarketplaceLimbah.show', ['listing' => $wasteListing]);
     }
 
-    public function store(User $user)
+    public function store(Request $request, User $user)
     {
         // Ensure user is a seller
         if (!$user->hasRole('seller')) {
@@ -121,15 +134,22 @@ class MarketplaceController extends Controller
 
         $user->load('sellerProfile');
         
-        // Fetch store listings
-        $listings = WasteListing::with(['category', 'primaryImage'])
+        $tab = $request->input('tab');
+        
+        $query = WasteListing::with(['category', 'primaryImage'])
             ->where('seller_id', $user->id)
-            ->where('verification_status', WasteListing::VERIFICATION_APPROVED)
-            ->where('availability_status', WasteListing::AVAILABILITY_AVAILABLE)
-            ->latest()
-            ->get();
+            ->where('verification_status', WasteListing::VERIFICATION_APPROVED);
+            
+        if ($tab === 'terjual') {
+            $query->where('availability_status', WasteListing::AVAILABILITY_SOLD_OUT);
+        } else {
+            $query->where('availability_status', WasteListing::AVAILABILITY_AVAILABLE);
+        }
+        
+        // Fetch store listings
+        $listings = $query->latest()->get();
 
-        return view('pages.MarketplaceLimbah.store', compact('user', 'listings'));
+        return view('pages.MarketplaceLimbah.store', compact('user', 'listings', 'tab'));
     }
 }
 

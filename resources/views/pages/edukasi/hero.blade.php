@@ -22,11 +22,11 @@
             {{-- Stats --}}
             <div class="flex flex-wrap items-center gap-12 sm:gap-16">
                 <div>
-                    <h3 class="text-3xl font-extrabold text-brand mb-1">100+</h3>
+                    <h3 class="text-3xl font-extrabold text-brand mb-1">{{ $articles->count() }}</h3>
                     <p class="text-sm font-medium text-gray-500">Artikel & Tips</p>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-extrabold text-brand mb-1">30+</h3>
+                    <h3 class="text-3xl font-extrabold text-brand mb-1">{{ $videos->count() }}</h3>
                     <p class="text-sm font-medium text-gray-500">Video Edukasi</p>
                 </div>
                 <div>

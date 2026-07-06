@@ -45,31 +45,20 @@
                 <p class="text-gray-500 text-sm">Ribuan mitra industri di seluruh Indonesia.</p>
             </div>
 
-            {{-- Card 4: Laporan ESG (Span 1) --}}
-            <div class="md:col-span-1 bg-white border border-gray-200 rounded-3xl p-8 flex flex-col group hover:-translate-y-1 hover:shadow-xl hover:border-brand/30 transition-all duration-300">
+            {{-- Card 4: Laporan ESG (Span 2) --}}
+            <div class="md:col-span-2 bg-white border border-gray-200 rounded-3xl p-8 flex flex-col group hover:-translate-y-1 hover:shadow-xl hover:border-brand/30 transition-all duration-300">
                 <i data-lucide="bar-chart-2" class="w-8 h-8 text-brand mb-6 group-hover:scale-110 transition-transform duration-300 transform origin-left"></i>
                 <h3 class="text-xl font-bold text-gray-900 mb-2">Laporan ESG</h3>
                 <p class="text-gray-500 text-sm">Data dampak lingkungan yang terukur.</p>
             </div>
 
             {{-- Card 5: Bantuan 24/7 (Span 2) --}}
-            <div class="md:col-span-2 bg-[#a6ebd1] rounded-3xl p-8 flex flex-col justify-center group hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                        <i data-lucide="headset" class="w-6 h-6 text-brand"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-brand">Bantuan 24/7</h3>
-                </div>
-                <p class="text-brand text-sm leading-relaxed">
+            <div class="md:col-span-2 bg-white border border-gray-200 rounded-3xl p-8 flex flex-col group hover:-translate-y-1 hover:shadow-xl hover:border-brand/30 transition-all duration-300">
+                <i data-lucide="headset" class="w-8 h-8 text-brand mb-6 group-hover:scale-110 transition-transform duration-300 transform origin-left"></i>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Bantuan 24/7</h3>
+                <p class="text-gray-500 text-sm">
                     Tim ahli kami siap membantu proses logistik dan konsultasi regulasi limbah kapan saja Anda butuhkan.
                 </p>
-            </div>
-
-            {{-- Card 6: Logistik Terpadu (Span 1) --}}
-            <div class="md:col-span-1 bg-white border border-gray-200 rounded-3xl p-8 flex flex-col group hover:-translate-y-1 hover:shadow-xl hover:border-brand/30 transition-all duration-300">
-                <i data-lucide="truck" class="w-8 h-8 text-brand mb-6 group-hover:scale-110 transition-transform duration-300 transform origin-left"></i>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">Logistik Terpadu</h3>
-                <p class="text-gray-500 text-sm">Armada khusus limbah B3 dan Non-B3.</p>
             </div>
 
         </div>

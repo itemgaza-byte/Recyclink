@@ -28,5 +28,23 @@ class HomeController extends Controller
     {
         return view('pages.tentang.index');
     }
+
+    public function submitContact(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+        ]);
+
+        // Saat menggunakan Resend Sandbox (belum ada domain verify),
+        // email HANYA BOLEH dikirim ke email terdaftar (therecyclink@gmail.com).
+        // Oleh karena itu, kita tidak bisa mengirim email otomatis ke $validated['email'] pengguna.
+        \Illuminate\Support\Facades\Mail::to('therecyclink@gmail.com')
+            ->send(new \App\Mail\ContactUsEmail($validated));
+
+        return redirect()->back()->with('success', 'Pesan Anda berhasil dikirim. Kami akan segera menghubungi Anda!');
+    }
 }
 

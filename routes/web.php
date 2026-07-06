@@ -22,6 +22,7 @@ use App\Http\Controllers\Seller\SellerWasteListingController;
 use App\Http\Controllers\Seller\SellerOrderController;
 use App\Http\Controllers\Seller\SellerWalletController;
 use App\Http\Controllers\Seller\SellerWithdrawalController;
+use App\Http\Controllers\Seller\SellerReportController;
 
 // Buyer Controller Imports
 use App\Http\Controllers\Buyer\BuyerDashboardController;
@@ -53,6 +54,7 @@ Route::get('/marketplace', [MarketplaceController::class, 'index'])->name('marke
 Route::get('/marketplace/{wasteListing}', [MarketplaceController::class, 'show'])->name('marketplace.show');
 Route::get('/toko/{user}', [MarketplaceController::class, 'store'])->name('marketplace.store');
 Route::get('/tentang', [HomeController::class, 'tentang'])->name('tentang');
+Route::post('/kontak', [HomeController::class, 'submitContact'])->name('kontak.submit');
 
 /*
 |--------------------------------------------------------------------------
@@ -92,7 +94,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/user/verifikasi/acknowledge', function () {
         $user = auth()->user();
         if ($user->isActive()) {
-            $user->email_verified_at = now();
+            $user->email_verified_at = \Carbon\Carbon::now();
             $user->save();
             return redirect()->route('choose.role')->with('success', 'Selamat datang di Recyclink!');
         }
@@ -192,6 +194,9 @@ Route::group([
         Route::get('/withdrawals', [SellerWithdrawalController::class, 'index'])->name('withdrawals.index');
         Route::get('/withdrawals/create', [SellerWithdrawalController::class, 'create'])->name('withdrawals.create');
         Route::post('/withdrawals', [SellerWithdrawalController::class, 'store'])->name('withdrawals.store');
+
+        // Reports
+        Route::get('/reports', [SellerReportController::class, 'index'])->name('reports.index');
     });
 });
 
@@ -231,6 +236,10 @@ Route::group([
             Route::get('/orders/{order}/payment/create', [BuyerPaymentController::class, 'create'])->name('orders.payment.create');
             Route::post('/orders/{order}/payment', [BuyerPaymentController::class, 'store'])->name('orders.payment.store');
 
+            // DompetX Simulation
+            Route::get('/orders/{order}/dompetx', [\App\Http\Controllers\DompetxController::class, 'checkout'])->name('dompetx.checkout');
+            Route::post('/orders/{order}/dompetx', [\App\Http\Controllers\DompetxController::class, 'process'])->name('dompetx.process');
+
             // Reviews
             Route::post('/orders/{order}/reviews', [BuyerReviewController::class, 'store'])->name('orders.reviews.store');
         });
@@ -244,6 +253,7 @@ Route::group([
 
         // Cart
         Route::get('/cart', [BuyerCartController::class, 'index'])->name('cart.index');
+        Route::post('/cart/checkout', [BuyerCartController::class, 'checkout'])->name('cart.checkout');
         Route::post('/cart/{wasteListing}', [BuyerCartController::class, 'store'])->name('cart.store');
         Route::delete('/cart/{wasteListing}', [BuyerCartController::class, 'destroy'])->name('cart.destroy');
     });
@@ -293,6 +303,7 @@ Route::group([
 
     // Reports
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/print', [AdminReportController::class, 'print'])->name('reports.print');
     Route::get('/reports/transactions', [AdminReportController::class, 'transactions'])->name('reports.transactions');
     Route::get('/reports/listings', [AdminReportController::class, 'listings'])->name('reports.listings');
     Route::get('/reports/users', [AdminReportController::class, 'users'])->name('reports.users');

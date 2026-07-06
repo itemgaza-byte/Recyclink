@@ -70,4 +70,44 @@ class BuyerCartController extends Controller implements HasMiddleware
         
         return redirect()->back()->with('success', 'Barang berhasil dihapus dari keranjang.');
     }
+
+    public function checkout()
+    {
+        $cartData = session()->get('cart', []);
+        if (empty($cartData)) {
+            return redirect()->back()->with('error', 'Keranjang belanja Anda kosong.');
+        }
+
+        $orderService = app(\App\Services\OrderService::class);
+        $orders = [];
+
+        foreach ($cartData as $listingId => $item) {
+            $listing = \App\Models\WasteListing::find($listingId);
+            if ($listing) {
+                try {
+                    $order = $orderService->createOrder(auth()->user(), $listing, [
+                        'quantity' => $item['quantity'],
+                        // Defaults as cart doesn't have shipping address UI yet
+                        'pickup_method' => 'self_pickup', 
+                        'pickup_date' => now()->addDays(1)->format('Y-m-d'),
+                        'pickup_time' => '10:00',
+                    ]);
+                    $orders[] = $order;
+                } catch (\Exception $e) {
+                    // Skip or log error if listing is unavailable
+                }
+            }
+        }
+
+        // Clear cart
+        session()->forget('cart');
+
+        if (count($orders) === 1) {
+            return redirect()->route('buyer.orders.payment.create', $orders[0]->id)->with('success', 'Pesanan berhasil dibuat! Silakan lanjutkan pembayaran.');
+        } elseif (count($orders) > 1) {
+            return redirect()->route('buyer.orders.index')->with('success', 'Pesanan berhasil dibuat untuk semua item! Silakan lakukan pembayaran satu per satu.');
+        } else {
+            return redirect()->back()->with('error', 'Gagal membuat pesanan. Stok mungkin habis.');
+        }
+    }
 }

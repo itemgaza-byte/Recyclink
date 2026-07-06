@@ -7,7 +7,7 @@
         ],
         [
             'question' => 'Apakah Recyclink menyediakan jasa pengangkutan limbah?',
-            'answer' => 'Ya, kami menyediakan layanan logistik terintegrasi untuk memudahkan pengangkutan limbah dari lokasi penjual ke pembeli dengan biaya yang transparan dan dapat dilacak secara real-time.',
+            'answer' => 'Tidak, saat ini kami tidak menyediakan layanan logistik pengangkutan. Sistem transaksi di Recyclink dilakukan secara COD (Cash on Delivery) atau kesepakatan pertemuan langsung antara pembeli dan penjual.',
             'active' => false,
         ],
         [
@@ -23,7 +23,7 @@
     ];
 @endphp
 
-<section class="py-16 bg-gray-50 border-t border-gray-100 min-h-[70vh] flex flex-col justify-center">
+<section class="py-16 bg-gray-50 border-t border-gray-100 min-h-[70vh]">
     <div class="w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         
         {{-- Section Header --}}
@@ -33,7 +33,7 @@
             </span>
             <h2 class="text-3xl font-extrabold text-gray-900 mb-4 tracking-tight">Pertanyaan yang Sering Diajukan</h2>
             <p class="text-gray-500 max-w-xl mx-auto text-base">
-                Segala hal yang perlu Anda ketahui tentang penggunaan platform marketplace dan layanan logistik kami.
+                Segala hal yang perlu Anda ketahui tentang penggunaan platform marketplace kami.
             </p>
         </div>
 
@@ -41,7 +41,7 @@
         {{-- ponytail: use native HTML details/summary elements to remove JavaScript toggle code --}}
         <div class="space-y-4 text-left">
             @foreach($faqs as $index => $faq)
-            <details class="group bg-white border border-gray-200 open:border-brand/30 open:shadow-sm rounded-xl overflow-hidden transition-all duration-300" {{ $faq['active'] ? 'open' : '' }}>
+            <details name="faq-accordion" class="group bg-white border border-gray-200 open:border-brand/30 open:shadow-sm rounded-xl overflow-hidden transition-all duration-300" {{ $faq['active'] ? 'open' : '' }}>
                 <summary class="w-full px-6 py-5 flex items-center justify-between focus:outline-none list-none cursor-pointer">
                     <span class="font-bold text-gray-900 text-left">{{ $faq['question'] }}</span>
                     <i data-lucide="chevron-down" class="w-5 h-5 shrink-0 ml-4 text-gray-400 group-open:text-brand group-open:rotate-180 transition-transform duration-300"></i>
