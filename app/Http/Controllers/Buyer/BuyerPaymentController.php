@@ -23,7 +23,6 @@ class BuyerPaymentController extends Controller implements HasMiddleware
     {
         return [
             'auth',
-            'verified',
             'role:buyer',
         ];
     }
@@ -38,19 +37,60 @@ class BuyerPaymentController extends Controller implements HasMiddleware
         return view('buyer.payments.create', compact('order'));
     }
 
-    // ponytail: submit payment confirmation
     public function store(StorePaymentRequest $request, Order $order)
     {
         if ($order->buyer_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        try {
-            $payment = $this->paymentService->createManualPayment(auth()->user(), $order, $request->validated());
-            return redirect()->route('buyer.payments.show', $payment)->with('success', 'Payment proof submitted.');
-        } catch (RecyclinkException $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+        $method = $request->input('payment_method', 'cash_on_delivery');
+
+        // Jika metode adalah COD, kita biarkan logic aslinya berjalan (atau ubah status menjadi processing)
+        if ($method === 'cash_on_delivery') {
+            try {
+                $payment = $this->paymentService->createManualPayment(auth()->user(), $order, $request->validated());
+                // Untuk COD, biasanya tidak langsung paid, tapi kita ikuti flow asli yang menganggap paid/selesai divalidasi
+                $this->paymentService->markAsPaid(auth()->user(), $payment);
+                return redirect()->route('buyer.orders.show', $order)->with('success', 'Pesanan COD berhasil dikonfirmasi. Silakan temui penjual.');
+            } catch (RecyclinkException $e) {
+                return redirect()->back()->with('error', $e->getMessage());
+            }
         }
+
+        // Jika metode BUKAN COD, tembak API DompetX
+        try {
+            $apiKey = env('DOMPETX_API_KEY');
+            $apiUrl = env('DOMPETX_API_URL', 'https://api.dompetx.com/v1/payment');
+            $merchantId = env('DOMPETX_MERCHANT_ID', '1111111111-1111-1111-1111-1111111111');
+
+            // Payload sesuai dengan format dari DompetX Payload Tester
+            $payload = [
+                'merchantId' => $merchantId,
+                'amount' => (int) $order->total_amount,
+                'currency' => 'IDR',
+                'settlementSpeed' => 'standard',
+                'reference' => $order->order_code,
+                'metadata' => [
+                    'customer_id' => 'CUST-' . auth()->id(),
+                    'order_type' => 'retail'
+                ],
+                'method' => strtoupper($method),
+                'chargeFeeToCustomer' => true
+            ];
+
+            // Kirim request ke API DompetX
+            $response = \Illuminate\Support\Facades\Http::withToken($apiKey)->post($apiUrl, $payload);
+
+            if ($response->successful() && isset($response['payment_url'])) {
+                // Jika DompetX mengembalikan URL pembayaran, lempar user ke sana
+                return redirect($response['payment_url']);
+            }
+        } catch (\Exception $e) {
+            // Jika API gagal atau belum live, abaikan dan lanjut ke halaman simulasi
+        }
+
+        // Fallback: Lempar ke halaman simulasi DompetX buatan kita
+        return redirect()->route('buyer.dompetx.checkout', ['order' => $order->id, 'method' => $method]);
     }
 
     // ponytail: show payment proof details

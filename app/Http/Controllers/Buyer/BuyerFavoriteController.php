@@ -13,7 +13,6 @@ class BuyerFavoriteController extends Controller implements HasMiddleware
     {
         return [
             'auth',
-            'verified',
             'role:buyer',
         ];
     }
@@ -31,13 +30,13 @@ class BuyerFavoriteController extends Controller implements HasMiddleware
         auth()->user()->favoriteListings()->firstOrCreate([
             'listing_id' => $wasteListing->id,
         ]);
-        return redirect()->back()->with('success', 'Listing added to favorites.');
+        return redirect()->back()->with('success', 'Anda telah memasukkan barang Anda ke favorit.');
     }
 
     // ponytail: remove listing from favorites
     public function destroy(WasteListing $wasteListing)
     {
         auth()->user()->favoriteListings()->where('listing_id', $wasteListing->id)->delete();
-        return redirect()->back()->with('success', 'Listing removed from favorites.');
+        return redirect()->back()->with('success', 'Anda telah menghapus barang dari favorit.');
     }
 }

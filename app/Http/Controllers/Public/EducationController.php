@@ -7,11 +7,14 @@ use App\Models\EducationContent;
 
 class EducationController extends Controller
 {
-    // ponytail: list all published articles
+    // ponytail: list all published articles, videos, and guides
     public function index()
     {
-        $articles = EducationContent::published()->with(['admin', 'categories'])->latest()->paginate(9);
-        return view('public.education.index', compact('articles'));
+        $articles = EducationContent::published()->where('content_type', 'article')->latest()->get();
+        $videos = EducationContent::published()->where('content_type', 'video')->latest()->get();
+        $guides = EducationContent::published()->where('content_type', 'guide')->latest()->get();
+
+        return view('pages.edukasi.index', compact('articles', 'videos', 'guides'));
     }
 
     // ponytail: view article detail page

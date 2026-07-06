@@ -10,15 +10,23 @@ use Illuminate\Support\Facades\DB;
 
 class ReportService
 {
-    // ponytail: get dashboard numbers with cache
+    // ponytail: get dashboard numbers — one query instead of four to minimize remote DB round trips
     public function getAdminDashboardSummary(): array
     {
         return \Illuminate\Support\Facades\Cache::remember('admin_dashboard_summary', 300, function () {
+            $row = DB::selectOne('
+                SELECT
+                    (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL) as total_users,
+                    (SELECT COUNT(*) FROM waste_listings WHERE deleted_at IS NULL) as total_listings,
+                    (SELECT COUNT(*) FROM orders WHERE deleted_at IS NULL) as total_transactions,
+                    (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE order_status = ? AND deleted_at IS NULL) as total_revenue
+            ', [Order::STATUS_COMPLETED]);
+
             return [
-                'total_users' => User::count(),
-                'total_listings' => WasteListing::count(),
-                'total_transactions' => Order::count(),
-                'total_revenue' => Order::where('order_status', Order::STATUS_COMPLETED)->sum('total_amount'),
+                'total_users'        => (int) $row->total_users,
+                'total_listings'     => (int) $row->total_listings,
+                'total_transactions' => (int) $row->total_transactions,
+                'total_revenue'      => (float) $row->total_revenue,
             ];
         });
     }
@@ -92,6 +100,106 @@ class ReportService
         return [
             'data' => $categories,
             'count' => $categories->count(),
+        ];
+    }
+
+    public function getAnalyticsReport(array $filters): array
+    {
+        $startDate = $filters['start_date'] ?? null;
+        $endDate = $filters['end_date'] ?? null;
+
+        // Base queries
+        $userQuery = User::query();
+        $listingQuery = WasteListing::query()->where('availability_status', WasteListing::AVAILABILITY_AVAILABLE);
+        $orderQuery = Order::query()->where('order_status', Order::STATUS_COMPLETED);
+        
+        if ($startDate) {
+            $userQuery->whereDate('created_at', '>=', $startDate);
+            $listingQuery->whereDate('created_at', '>=', $startDate);
+            $orderQuery->whereDate('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $userQuery->whereDate('created_at', '<=', $endDate);
+            $listingQuery->whereDate('created_at', '<=', $endDate);
+            $orderQuery->whereDate('created_at', '<=', $endDate);
+        }
+
+        // 1. Total Pengguna (Penjual & Pembeli)
+        $totalUsers = $userQuery->count();
+        $totalSellers = (clone $userQuery)->role('seller')->count();
+        $totalBuyers = (clone $userQuery)->role('buyer')->count();
+
+        // 2. Total Listing (Limbah Aktif)
+        $totalListings = $listingQuery->count();
+
+        // 3. Total Transaksi (Transaksi Berhasil)
+        $totalTransactions = $orderQuery->count();
+
+        // 4. Pendapatan Platform (Total platform_fee)
+        $platformRevenue = $orderQuery->sum('platform_fee');
+
+        // 5. Jenis Limbah Populer (dari transaksi atau listing)
+        // Kita hitung dari jumlah transaksi per kategori limbah
+        $popularCategories = DB::table('orders')
+            ->join('order_items', 'orders.id', '=', 'order_items.order_id')
+            ->join('waste_listings', 'order_items.listing_id', '=', 'waste_listings.id')
+            ->join('waste_categories', 'waste_listings.category_id', '=', 'waste_categories.id')
+            ->where('orders.order_status', Order::STATUS_COMPLETED)
+            ->when($startDate, fn($q) => $q->whereDate('orders.created_at', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->whereDate('orders.created_at', '<=', $endDate))
+            ->whereNull('orders.deleted_at')
+            ->select('waste_categories.category_name', DB::raw('COUNT(orders.id) as total_sales'))
+            ->groupBy('waste_categories.id', 'waste_categories.category_name')
+            ->orderByDesc('total_sales')
+            ->take(5)
+            ->get();
+
+        // 6. Wilayah Aktif (Kota dengan transaksi terbanyak)
+        $activeRegions = DB::table('orders')
+            ->join('waste_listings', 'orders.seller_id', '=', 'waste_listings.seller_id')
+            ->where('orders.order_status', Order::STATUS_COMPLETED)
+            ->when($startDate, fn($q) => $q->whereDate('orders.created_at', '>=', $startDate))
+            ->when($endDate, fn($q) => $q->whereDate('orders.created_at', '<=', $endDate))
+            ->whereNull('orders.deleted_at')
+            ->select('waste_listings.city', DB::raw('COUNT(DISTINCT orders.id) as total_transactions'))
+            ->groupBy('waste_listings.city')
+            ->orderByDesc('total_transactions')
+            ->take(5)
+            ->get();
+
+        // Chart Data (Transactions over time)
+        $chartData = $this->getChartData($startDate, $endDate);
+
+        return [
+            'total_users' => $totalUsers,
+            'total_sellers' => $totalSellers,
+            'total_buyers' => $totalBuyers,
+            'total_listings' => $totalListings,
+            'total_transactions' => $totalTransactions,
+            'platform_revenue' => $platformRevenue,
+            'popular_categories' => $popularCategories,
+            'active_regions' => $activeRegions,
+            'chart_data' => $chartData,
+            'filters' => $filters,
+        ];
+    }
+
+    private function getChartData($startDate, $endDate)
+    {
+        // Simple grouping by date for completed orders
+        $query = Order::query()->where('order_status', Order::STATUS_COMPLETED);
+        
+        if ($startDate) $query->whereDate('created_at', '>=', $startDate);
+        if ($endDate) $query->whereDate('created_at', '<=', $endDate);
+        
+        $data = $query->select(DB::raw('DATE(created_at) as date'), DB::raw('COUNT(id) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+            
+        return [
+            'labels' => $data->pluck('date')->toArray(),
+            'data' => $data->pluck('count')->toArray(),
         ];
     }
 }

@@ -31,8 +31,8 @@ class NotificationService
         if ($seller) {
             $this->sendToUser(
                 $seller,
-                "New Order Received",
-                "You have received a new order {$order->order_code}.",
+                "Pesanan Baru Diterima",
+                "Anda menerima pesanan baru dengan kode {$order->order_code}.",
                 "order",
                 $order->id
             );
@@ -44,10 +44,19 @@ class NotificationService
     {
         $buyer = $order->buyer;
         if ($buyer) {
+            $statusMap = [
+                'pending'    => 'Menunggu Konfirmasi',
+                'accepted'   => 'Diterima',
+                'processing' => 'Diproses',
+                'completed'  => 'Selesai',
+                'cancelled'  => 'Dibatalkan',
+                'rejected'   => 'Ditolak',
+            ];
+            $statusLabel = $statusMap[$order->order_status] ?? strtoupper($order->order_status);
             $this->sendToUser(
                 $buyer,
-                "Order Status Updated",
-                "Your order {$order->order_code} status is now: " . strtoupper($order->order_status),
+                "Status Pesanan Diperbarui",
+                "Status pesanan {$order->order_code} Anda sekarang: {$statusLabel}.",
                 "order",
                 $order->id
             );
@@ -61,8 +70,8 @@ class NotificationService
         if ($seller) {
             $this->sendToUser(
                 $seller,
-                "Order Paid",
-                "Payment for order {$order->order_code} has been successfully verified.",
+                "Pembayaran Diterima",
+                "Pembayaran untuk pesanan {$order->order_code} telah berhasil diverifikasi.",
                 "payment",
                 $order->id
             );
@@ -74,13 +83,18 @@ class NotificationService
     {
         $seller = $listing->seller;
         if ($seller) {
-            $status = strtoupper($listing->verification_status);
-            $note = $listing->admin_note ? " Note: {$listing->admin_note}" : "";
-            
+            $statusMap = [
+                'approved' => 'Disetujui',
+                'rejected' => 'Ditolak',
+                'pending'  => 'Menunggu Verifikasi',
+            ];
+            $statusLabel = $statusMap[$listing->verification_status] ?? strtoupper($listing->verification_status);
+            $note = $listing->admin_note ? " Catatan: {$listing->admin_note}" : "";
+
             $this->sendToUser(
                 $seller,
-                "Listing Verification {$status}",
-                "Your listing '{$listing->title}' verification status is {$status}.{$note}",
+                "Verifikasi Listing {$statusLabel}",
+                "Listing '{$listing->title}' Anda telah {$statusLabel}.{$note}",
                 "listing",
                 $listing->id
             );
@@ -92,12 +106,12 @@ class NotificationService
     {
         $seller = $listing->seller;
         if ($seller) {
-            $note = $listing->admin_note ? " Reason: {$listing->admin_note}" : "";
-            
+            $note = $listing->admin_note ? " Alasan: {$listing->admin_note}" : "";
+
             $this->sendToUser(
                 $seller,
-                "Listing Deactivated",
-                "Your listing '{$listing->title}' has been deactivated by the administrator.{$note}",
+                "Listing Dinonaktifkan",
+                "Listing '{$listing->title}' Anda telah dinonaktifkan oleh administrator.{$note}",
                 "listing",
                 $listing->id
             );
@@ -111,8 +125,8 @@ class NotificationService
         if ($respondent) {
             $this->sendToUser(
                 $respondent,
-                "New Complaint Filed",
-                "A complaint has been filed against you regarding order #{$complaint->order->order_code}.",
+                "Keluhan Baru Diajukan",
+                "Terdapat keluhan yang diajukan terhadap Anda terkait pesanan #{$complaint->order->order_code}.",
                 "complaint",
                 $complaint->id
             );
@@ -123,8 +137,8 @@ class NotificationService
         foreach ($admins as $admin) {
             $this->sendToUser(
                 $admin,
-                "New Complaint Filed",
-                "A new complaint #{$complaint->complaint_number} has been filed for order #{$complaint->order->order_code}.",
+                "Keluhan Baru Masuk",
+                "Keluhan baru #{$complaint->complaint_number} telah diajukan untuk pesanan #{$complaint->order->order_code}.",
                 "complaint",
                 $complaint->id
             );
@@ -138,8 +152,8 @@ class NotificationService
         if ($seller) {
             $this->sendToUser(
                 $seller,
-                "Withdrawal Requested",
-                "Your withdrawal request of ID {$withdrawal->withdrawal_number} for amount " . number_format($withdrawal->amount, 2) . " is pending approval.",
+                "Permintaan Penarikan Dana Diterima",
+                "Permintaan penarikan dana #{$withdrawal->withdrawal_number} sebesar Rp " . number_format($withdrawal->amount, 0, ',', '.') . " sedang menunggu persetujuan.",
                 "withdrawal",
                 $withdrawal->id
             );
@@ -153,8 +167,8 @@ class NotificationService
         if ($seller) {
             $this->sendToUser(
                 $seller,
-                "Withdrawal Approved",
-                "Your withdrawal request {$withdrawal->withdrawal_number} has been approved and is being processed.",
+                "Penarikan Dana Disetujui",
+                "Permintaan penarikan dana #{$withdrawal->withdrawal_number} Anda telah disetujui dan sedang diproses.",
                 "withdrawal",
                 $withdrawal->id
             );
@@ -166,11 +180,11 @@ class NotificationService
     {
         $seller = $withdrawal->user;
         if ($seller) {
-            $note = $withdrawal->admin_note ? " Reason: {$withdrawal->admin_note}" : "";
+            $note = $withdrawal->admin_note ? " Alasan: {$withdrawal->admin_note}" : "";
             $this->sendToUser(
                 $seller,
-                "Withdrawal Rejected",
-                "Your withdrawal request {$withdrawal->withdrawal_number} has been rejected.{$note}",
+                "Penarikan Dana Ditolak",
+                "Permintaan penarikan dana #{$withdrawal->withdrawal_number} Anda telah ditolak.{$note}",
                 "withdrawal",
                 $withdrawal->id
             );
@@ -184,8 +198,8 @@ class NotificationService
         if ($seller) {
             $this->sendToUser(
                 $seller,
-                "Withdrawal Completed",
-                "Your withdrawal request {$withdrawal->withdrawal_number} has been paid successfully.",
+                "Penarikan Dana Berhasil",
+                "Permintaan penarikan dana #{$withdrawal->withdrawal_number} Anda telah berhasil dibayarkan.",
                 "withdrawal",
                 $withdrawal->id
             );

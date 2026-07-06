@@ -16,7 +16,9 @@ class EnsureSellerVerified
         if ($user && $user->isSeller()) {
             $profile = $user->sellerProfile;
             if (!$profile || !$profile->isVerified()) {
-                return redirect()->route('seller.dashboard')->with('error', 'Your shop profile is awaiting administrator verification.');
+                $fallback = route('seller.dashboard');
+                $url = request()->headers->get('referer', $fallback);
+                return redirect($url)->with('error', 'Profil toko Anda masih menunggu proses verifikasi oleh administrator. Mohon tunggu.');
             }
         }
 

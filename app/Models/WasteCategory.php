@@ -37,9 +37,7 @@ class WasteCategory extends Model
 
     public static function getActiveCached()
     {
-        return Cache::remember('waste_categories_active', 3600, function () {
-            return static::active()->orderBy('sort_order')->get();
-        });
+        return static::active()->orderBy('sort_order')->get();
     }
 
     public function scopeActive($query)        { return $query->where('is_active', true); }

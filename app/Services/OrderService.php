@@ -70,7 +70,7 @@ class OrderService
                 'order_code' => Order::generateOrderCode(),
                 'buyer_id' => $buyer->id,
                 'seller_id' => $lockedListing->seller_id,
-                'order_status' => Order::STATUS_PENDING,
+                'order_status' => Order::STATUS_WAITING_PAYMENT,
                 'subtotal' => $subtotal,
                 'platform_fee' => $platformFee,
                 'shipping_cost' => $shippingCost,

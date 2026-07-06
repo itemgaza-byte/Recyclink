@@ -24,7 +24,6 @@ class BuyerOrderController extends Controller implements HasMiddleware
     {
         return [
             'auth',
-            'verified',
             'role:buyer',
         ];
     }
@@ -49,7 +48,16 @@ class BuyerOrderController extends Controller implements HasMiddleware
     {
         try {
             $order = $this->orderService->createOrder(auth()->user(), $wasteListing, $request->validated());
-            return redirect()->route('buyer.orders.show', $order)->with('success', 'Order placed successfully.');
+            
+            if (session()->has('cart')) {
+                $cart = session('cart');
+                if (isset($cart[$wasteListing->id])) {
+                    unset($cart[$wasteListing->id]);
+                    session(['cart' => $cart]);
+                }
+            }
+
+            return redirect()->route('buyer.orders.show', $order)->with('success', 'Pesanan berhasil dibuat.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

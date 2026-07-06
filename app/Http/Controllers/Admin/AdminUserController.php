@@ -14,7 +14,6 @@ class AdminUserController extends Controller implements HasMiddleware
     {
         return [
             'auth',
-            'verified',
             'role:admin',
         ];
     }
@@ -37,14 +36,104 @@ class AdminUserController extends Controller implements HasMiddleware
     public function updateStatus(Request $request, User $user)
     {
         try {
+            $protectedEmails = ['admin@recyclink.id', 'admin@recyclink.com'];
+            if (in_array($user->email, $protectedEmails) && $request->input('status') !== User::STATUS_ACTIVE) {
+                throw new RecyclinkException("Anda tidak dapat mengubah status akun Super Admin atau Admin Utama.");
+            }
+
             $status = $request->input('status', '');
             if (!in_array($status, [User::STATUS_ACTIVE, User::STATUS_INACTIVE, User::STATUS_SUSPENDED, User::STATUS_PENDING])) {
                 throw new RecyclinkException("Invalid status: {$status}");
             }
-            $user->update(['status' => $status]);
-            return redirect()->back()->with('success', 'User status updated successfully.');
+            
+            $updateData = ['status' => $status];
+            if ($request->has('rejection_reason')) {
+                $updateData['rejection_reason'] = $request->input('rejection_reason');
+            } elseif ($status === User::STATUS_ACTIVE) {
+                // Clear rejection reason if activated
+                $updateData['rejection_reason'] = null;
+            }
+            
+            $user->forceFill($updateData)->save();
+            
+            // Auto verify seller profile if user is activated
+            if ($status === User::STATUS_ACTIVE && $user->isSeller() && $user->sellerProfile) {
+                $user->sellerProfile->update([
+                    'verification_status' => \App\Models\SellerProfile::VERIFICATION_VERIFIED,
+                    'verified_at' => now(),
+                ]);
+            }
+            
+            // Send Notification
+            if ($status === User::STATUS_ACTIVE) {
+                $user->notifications()->create([
+                    'title' => 'Profil Diverifikasi',
+                    'message' => 'Profil Anda telah berhasil diverifikasi oleh Admin. Anda sekarang dapat mengakses semua fitur.',
+                    'notification_type' => 'account_status',
+                    'data' => ['status' => 'active', 'message' => 'Profil Anda telah berhasil diverifikasi oleh Admin. Anda sekarang dapat mengakses semua fitur.']
+                ]);
+            } elseif ($status === User::STATUS_INACTIVE) {
+                $user->notifications()->create([
+                    'title' => 'Pendaftaran Ditolak',
+                    'message' => 'Pendaftaran Profil Anda ditolak.',
+                    'notification_type' => 'account_status',
+                    'data' => ['status' => 'rejected', 'message' => 'Pendaftaran Profil Anda ditolak.', 'reason' => $request->input('rejection_reason')]
+                ]);
+            } elseif ($status === User::STATUS_SUSPENDED) {
+                $user->notifications()->create([
+                    'title' => 'Akun Ditangguhkan',
+                    'message' => 'Akun Anda telah ditangguhkan oleh Admin.',
+                    'notification_type' => 'account_status',
+                    'data' => ['status' => 'suspended', 'message' => 'Akun Anda telah ditangguhkan oleh Admin.', 'reason' => $request->input('rejection_reason')]
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Status pengguna berhasil diperbarui.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    // ponytail: verify seller profile
+    public function verifySellerProfile(User $user)
+    {
+        try {
+            if (!$user->isSeller() || !$user->sellerProfile) {
+                throw new RecyclinkException("Pengguna ini bukan penjual atau belum memiliki profil toko.");
+            }
+
+            $user->sellerProfile->update([
+                'verification_status' => \App\Models\SellerProfile::VERIFICATION_VERIFIED,
+                'verified_at' => now(),
+            ]);
+
+            return redirect()->back()->with('success', 'Profil toko penjual berhasil diverifikasi.');
+        } catch (RecyclinkException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    // ponytail: delete user from database
+    public function destroy(User $user)
+    {
+        try {
+            $currentUser = auth()->user();
+
+            if ($user->id === $currentUser->id) {
+                throw new RecyclinkException("Anda tidak dapat menghapus akun Anda sendiri.");
+            }
+            
+            if ($user->email === 'admin@recyclink.id') {
+                throw new RecyclinkException("Akun Super Admin tidak dapat dihapus.");
+            }
+
+            if ($user->email === 'admin@recyclink.com' && $currentUser->email !== 'admin@recyclink.id') {
+                throw new RecyclinkException("Hanya Super Admin yang dapat menghapus akun Admin Utama.");
+            }
+            $user->forceDelete();
+            return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil dihapus secara permanen dari sistem.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.users.index')->with('error', $e->getMessage());
         }
     }
 }
