@@ -42,6 +42,16 @@ use App\Http\Controllers\Admin\AdminComplaintController;
 use App\Http\Controllers\Admin\AdminEducationContentController;
 use App\Http\Controllers\Admin\AdminReportController;
 
+// Webhook Controller Import
+use App\Http\Controllers\Api\DompetxWebhookController;
+
+/*
+|--------------------------------------------------------------------------
+| Webhook Routes
+|--------------------------------------------------------------------------
+*/
+Route::post('/webhook/dompetx', [DompetxWebhookController::class, 'handle'])->name('webhook.dompetx');
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes
