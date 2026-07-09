@@ -205,14 +205,21 @@
 </nav>
 
 <script>
-    const toggle    = document.getElementById('nav-toggle');
-    const menu      = document.getElementById('mobile-menu');
-    const iconOpen  = document.getElementById('icon-open');
-    const iconClose = document.getElementById('icon-close');
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('nav-toggle');
+        const menu = document.getElementById('mobile-menu');
 
-    toggle.addEventListener('click', () => {
-        const isHidden = menu.classList.toggle('hidden');
-        iconOpen.classList.toggle('hidden', !isHidden);
-        iconClose.classList.toggle('hidden', isHidden);
+        if (toggle && menu) {
+            toggle.addEventListener('click', () => {
+                const isHidden = menu.classList.toggle('hidden');
+                
+                // Mengambil ulang element karena Lucide JS seringkali menimpa (replace) tag <i> menjadi <svg>
+                const iconOpen = document.getElementById('icon-open');
+                const iconClose = document.getElementById('icon-close');
+                
+                if (iconOpen) iconOpen.classList.toggle('hidden', !isHidden);
+                if (iconClose) iconClose.classList.toggle('hidden', isHidden);
+            });
+        }
     });
 </script>
