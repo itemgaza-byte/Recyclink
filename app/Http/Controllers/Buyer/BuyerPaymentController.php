@@ -63,14 +63,14 @@ class BuyerPaymentController extends Controller implements HasMiddleware
         if ($dompetxMode === 'live') {
             try {
                 $apiKey = env('DOMPETX_API_KEY');
-                // Use checkout endpoint
-                $apiUrl = env('DOMPETX_API_URL', 'https://api.dompetx.com/v1/payments/checkout');
+                // Mengabaikan env yang typo (kurang huruf 's') dan memaksakan URL yang benar
+                $apiUrl = 'https://api.dompetx.com/v1/payments';
 
                 $payload = [
                     'amount' => (int) $order->total_amount,
                     'currency' => 'IDR',
                     'reference' => $order->order_code,
-                    'redirectUrl' => route('buyer.orders.index'),
+                    'method' => strtoupper($method),
                     'metadata' => [
                         'order_name' => 'Pesanan ' . $order->order_code,
                         'customer_name' => auth()->user()->name,
@@ -90,19 +90,20 @@ class BuyerPaymentController extends Controller implements HasMiddleware
                     'Content-Type' => 'application/json'
                 ])->post($apiUrl, $payload);
 
-                $redirectLink = $response['payment_url'] ?? $response['payment_link'] ?? null;
+                // API mengembalikan paymentUrl dalam format camelCase untuk /v1/payments
+                $redirectLink = $response['paymentUrl'] ?? $response['payment_url'] ?? $response['payment_link'] ?? null;
 
                 if ($response->successful() && $redirectLink) {
                     return redirect($redirectLink);
                 }
 
                 // Log response if failed for debugging
-                \Illuminate\Support\Facades\Log::error('DompetX Checkout Failed', [
+                \Illuminate\Support\Facades\Log::error('DompetX Payment Failed', [
                     'response' => $response->json(),
                     'status' => $response->status()
                 ]);
 
-                // Jika gagal mendapatkan payment_url
+                // Jika gagal mendapatkan link
                 return redirect()->back()->with('error', 'Gagal membuat tagihan pembayaran. Mohon coba lagi.');
             } catch (\Exception $e) {
                 return redirect()->back()->with('error', 'Sistem pembayaran sedang gangguan: ' . $e->getMessage());
