@@ -69,6 +69,8 @@ class BuyerPaymentController extends Controller implements HasMiddleware
 
                 // Gunakan Direct API (bukan checkout) agar user tetap di website kita (White-label)
                 $apiUrl = env('DOMPETX_API_URL', 'https://api.dompetx.com/v1/payments');
+                // PASTIKAN menghapus suffix /checkout jika ada di Environment Variables Railway
+                $apiUrl = str_replace('/checkout', '', $apiUrl);
 
                 // Tambahkan suffix attempt untuk menghindari 409 duplicate transaction reference dari DompetX jika user mencoba bayar ulang
                 $referenceCode = $order->order_code . '_attempt_' . time();
