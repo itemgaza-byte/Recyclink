@@ -67,8 +67,8 @@ class BuyerPaymentController extends Controller implements HasMiddleware
                     return redirect()->back()->with('error', 'Konfigurasi API Key DompetX belum diatur. Hubungi admin.');
                 }
 
-                // Endpoint checkout (hosted payment page) sesuai dokumentasi DompetX
-                $apiUrl = env('DOMPETX_API_URL', 'https://api.dompetx.com/v1/payments/checkout');
+                // Gunakan Direct API (bukan checkout) agar user tetap di website kita (White-label)
+                $apiUrl = env('DOMPETX_API_URL', 'https://api.dompetx.com/v1/payments');
 
                 // Tambahkan suffix attempt untuk menghindari 409 duplicate transaction reference dari DompetX jika user mencoba bayar ulang
                 $referenceCode = $order->order_code . '_attempt_' . time();
@@ -79,11 +79,10 @@ class BuyerPaymentController extends Controller implements HasMiddleware
                     'currency' => 'IDR',
                     'reference' => $referenceCode,
                     'method' => strtoupper($method),
-                    'paymentMethod' => strtoupper($method),
-                    'payment_method' => strtoupper($method),
-                    'return_url' => route('buyer.orders.show', $order->id),
-                    'redirectUrl' => route('buyer.orders.show', $order->id),
-                    'success_redirect_url' => route('buyer.orders.show', $order->id),
+                    'metadata' => [
+                        'order_id' => $order->id,
+                        'buyer_name' => auth()->user()->name,
+                    ],
                 ];
 
                 $body = json_encode($payload);
@@ -114,19 +113,36 @@ class BuyerPaymentController extends Controller implements HasMiddleware
 
                 $responseData = $response->json();
 
-                // Cari URL redirect dari response (sesuai foto, key-nya adalah "payment_url")
-                $redirectLink = $responseData['paymentUrl']
-                    ?? $responseData['payment_url']
-                    ?? $responseData['checkoutUrl']
-                    ?? $responseData['checkout_url']
-                    ?? $responseData['data']['paymentUrl'] ?? null
-                    ?? $responseData['data']['payment_url'] ?? null
-                    ?? $responseData['data']['checkout_url'] ?? null;
+                if ($response->successful()) {
+                    // Simpan data VA / QRIS ke tabel Payments
+                    $paymentData = [
+                        'payment_method' => $method,
+                        'payment_gateway' => 'dompetx',
+                        'payment_reference' => $responseData['id'] ?? $referenceCode,
+                        'amount' => $order->total_amount,
+                        'payment_status' => \App\Models\Payment::STATUS_PENDING,
+                        'payment_number' => 'PAY-' . now()->format('YmdHis') . '-' . rand(1000, 9999),
+                        'gateway_transaction_id' => $responseData['id'] ?? null,
+                        'gateway_response' => json_encode($responseData),
+                    ];
 
-                if ($response->successful() && $redirectLink) {
-                    // Redirect langsung ke URL DompetX
-                    return redirect($redirectLink);
+                    if (isset($responseData['vaData']['va_number'])) {
+                        $paymentData['virtual_account_number'] = $responseData['vaData']['va_number'];
+                        $paymentData['qris_url'] = null; // reset if changing method
+                    } elseif (isset($responseData['qrData']['qrImage'])) {
+                        $paymentData['qris_url'] = $responseData['qrData']['qrImage'];
+                        $paymentData['virtual_account_number'] = null;
+                    }
+
+                    \App\Models\Payment::updateOrCreate(
+                        ['order_id' => $order->id],
+                        $paymentData
+                    );
+
+                    // Redirect ke halaman detail pesanan, user akan melihat VA/QRIS di sana!
+                    return redirect()->route('buyer.orders.show', $order->id)->with('success', 'Instruksi pembayaran berhasil dibuat!');
                 }
+
                 \Illuminate\Support\Facades\Log::error('DompetX Checkout Failed', [
                     'http_status' => $response->status(),
                     'response_body' => $responseData,

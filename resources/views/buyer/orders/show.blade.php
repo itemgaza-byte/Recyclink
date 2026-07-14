@@ -133,6 +133,39 @@
 
         {{-- Right: Summary --}}
         <div class="space-y-5">
+            {{-- Payment Instructions (VA/QRIS) --}}
+            @if($order->payment && in_array($order->payment->payment_status, ['pending']))
+                @if($order->payment->virtual_account_number || $order->payment->qris_url)
+                <div class="bg-white border border-brand/20 rounded-2xl shadow-sm overflow-hidden border-2">
+                    <div class="px-5 py-4 border-b border-gray-100 bg-brand/5">
+                        <h3 class="font-bold text-brand flex items-center gap-2"><i data-lucide="wallet" class="w-4 h-4"></i> Instruksi Pembayaran</h3>
+                    </div>
+                    <div class="px-5 py-6 flex flex-col items-center text-center">
+                        <p class="text-sm text-gray-500 mb-1">Metode yang dipilih:</p>
+                        <p class="text-sm font-bold uppercase text-gray-900 mb-4">{{ str_replace('_', ' ', $order->payment->payment_method) }}</p>
+                        
+                        @if($order->payment->virtual_account_number)
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between gap-4 mt-2 w-full">
+                                <div>
+                                    <p class="text-xs text-gray-400 text-left mb-0.5">Nomor Virtual Account</p>
+                                    <span class="font-mono text-lg font-bold tracking-wider text-gray-900">{{ $order->payment->virtual_account_number }}</span>
+                                </div>
+                                <button type="button" onclick="navigator.clipboard.writeText('{{ $order->payment->virtual_account_number }}'); alert('Nomor VA disalin!')" class="text-brand hover:bg-brand/10 p-2 rounded-lg transition-colors"><i data-lucide="copy" class="w-5 h-5"></i></button>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-4 px-2">Gunakan nomor rekening di atas untuk melakukan transfer dari ATM, Internet Banking, atau Mobile Banking.</p>
+                        @endif
+
+                        @if($order->payment->qris_url)
+                            <div class="mt-2 border border-gray-100 p-3 rounded-2xl inline-block bg-white shadow-sm">
+                                <img src="{{ $order->payment->qris_url }}" alt="QRIS Barcode" class="w-48 h-48 object-contain">
+                            </div>
+                            <p class="text-xs text-gray-400 mt-4 px-2">Scan kode QR di atas menggunakan aplikasi e-Wallet (OVO, GoPay, Dana) atau Mobile Banking Anda.</p>
+                        @endif
+                    </div>
+                </div>
+                @endif
+            @endif
+
             <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
                     <h3 class="font-bold text-gray-900">Ringkasan Pembayaran</h3>
