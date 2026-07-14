@@ -80,9 +80,9 @@ class AuthService
 
         // ponytail: clear per-user Redis caches
         if ($userId) {
-            \Illuminate\Support\Facades\Cache::forget("profile_complete_{$userId}");
-            \Illuminate\Support\Facades\Cache::forget("seller_dashboard_summary_{$userId}");
-            \Illuminate\Support\Facades\Cache::forget("buyer_dashboard_summary_{$userId}");
+//             \Illuminate\Support\Facades\Cache::forget("profile_complete_{$userId}");
+//             \Illuminate\Support\Facades\Cache::forget("seller_dashboard_summary_{$userId}");
+//             \Illuminate\Support\Facades\Cache::forget("buyer_dashboard_summary_{$userId}");
         }
     }
 }

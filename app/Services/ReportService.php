@@ -13,22 +13,20 @@ class ReportService
     // ponytail: get dashboard numbers — one query instead of four to minimize remote DB round trips
     public function getAdminDashboardSummary(): array
     {
-        return \Illuminate\Support\Facades\Cache::remember('admin_dashboard_summary', 300, function () {
-            $row = DB::selectOne('
-                SELECT
-                    (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL) as total_users,
-                    (SELECT COUNT(*) FROM waste_listings WHERE deleted_at IS NULL) as total_listings,
-                    (SELECT COUNT(*) FROM orders WHERE deleted_at IS NULL) as total_transactions,
-                    (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE order_status = ? AND deleted_at IS NULL) as total_revenue
-            ', [Order::STATUS_COMPLETED]);
+        $row = DB::selectOne('
+            SELECT
+                (SELECT COUNT(*) FROM users WHERE deleted_at IS NULL) as total_users,
+                (SELECT COUNT(*) FROM waste_listings WHERE deleted_at IS NULL) as total_listings,
+                (SELECT COUNT(*) FROM orders WHERE deleted_at IS NULL) as total_transactions,
+                (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE order_status = ? AND deleted_at IS NULL) as total_revenue
+        ', [Order::STATUS_COMPLETED]);
 
-            return [
-                'total_users'        => (int) $row->total_users,
-                'total_listings'     => (int) $row->total_listings,
-                'total_transactions' => (int) $row->total_transactions,
-                'total_revenue'      => (float) $row->total_revenue,
-            ];
-        });
+        return [
+            'total_users'        => (int) $row->total_users,
+            'total_listings'     => (int) $row->total_listings,
+            'total_transactions' => (int) $row->total_transactions,
+            'total_revenue'      => (float) $row->total_revenue,
+        ];
     }
 
     // ponytail: query transactions report

@@ -23,13 +23,7 @@ class MarketplaceService
     // ponytail: search and filter listings
     public function searchListings(array $filters): LengthAwarePaginator
     {
-        $page = request('page', 1);
-        $filterHash = md5(serialize($filters));
-        $cacheKey = "marketplace_listings_page_{$page}_{$filterHash}";
-
-        return \Illuminate\Support\Facades\Cache::tags(['marketplace_listings'])->remember($cacheKey, 300, function () use ($filters) {
-            return $this->performSearch($filters);
-        });
+        return $this->performSearch($filters);
     }
 
     protected function performSearch(array $filters): LengthAwarePaginator

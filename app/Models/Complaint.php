@@ -16,7 +16,7 @@ class Complaint extends Model
     {
         $clearCache = function () {
             // ponytail: invalidate admin dashboard cache on complaint changes
-            Cache::forget('admin_dashboard_summary');
+//             Cache::forget('admin_dashboard_summary');
         };
 
         static::created($clearCache);

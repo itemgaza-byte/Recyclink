@@ -108,9 +108,7 @@ class MarketplaceController extends Controller
             ]);
         }
 
-        $categories = Cache::remember('marketplace_categories', 3600, function () {
-            return WasteCategory::all();
-        });
+        $categories = WasteCategory::all();
         return view('pages.MarketplaceLimbah.index', compact('categories'));
     }
 

@@ -19,9 +19,9 @@ class Order extends Model
     {
         $clearCache = function ($order) {
             // ponytail: invalidate seller, buyer and admin dashboard caches on order changes
-            Cache::forget('admin_dashboard_summary');
-            Cache::forget("seller_dashboard_summary_{$order->seller_id}");
-            Cache::forget("buyer_dashboard_summary_{$order->buyer_id}");
+//             Cache::forget('admin_dashboard_summary');
+//             Cache::forget("seller_dashboard_summary_{$order->seller_id}");
+//             Cache::forget("buyer_dashboard_summary_{$order->buyer_id}");
         };
 
         static::created($clearCache);
