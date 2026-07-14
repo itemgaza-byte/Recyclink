@@ -70,11 +70,14 @@ class BuyerPaymentController extends Controller implements HasMiddleware
                 // Endpoint checkout (hosted payment page) sesuai dokumentasi DompetX
                 $apiUrl = env('DOMPETX_API_URL', 'https://api.dompetx.com/v1/payments/checkout');
 
+                // Tambahkan suffix attempt untuk menghindari 409 duplicate transaction reference dari DompetX jika user mencoba bayar ulang
+                $referenceCode = $order->order_code . '_attempt_' . time();
+
                 // Payload checkout hanya membutuhkan amount, currency, dan reference
                 $payload = [
                     'amount' => (int) $order->total_amount,
                     'currency' => 'IDR',
-                    'reference' => $order->order_code,
+                    'reference' => $referenceCode,
                 ];
 
                 $body = json_encode($payload);

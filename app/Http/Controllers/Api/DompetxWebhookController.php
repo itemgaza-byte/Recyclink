@@ -31,8 +31,9 @@ class DompetxWebhookController extends Controller
             return response()->json(['message' => 'Missing reference'], 400);
         }
 
-        // 3. Cari pesanan berdasarkan order_code
-        $order = Order::where('order_code', $reference)->first();
+        // 3. Cari pesanan berdasarkan order_code (bersihkan dari suffix _attempt_ jika ada)
+        $originalOrderCode = explode('_attempt_', $reference)[0];
+        $order = Order::where('order_code', $originalOrderCode)->first();
 
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);
