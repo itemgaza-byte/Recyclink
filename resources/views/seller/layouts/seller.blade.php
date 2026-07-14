@@ -16,33 +16,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800 antialiased font-sans flex h-screen overflow-hidden">
 
-    <!-- Global Toast Notifications -->
-    @if(session('success') || session('error'))
-        <div id="global-toast" class="fixed top-24 right-6 z-[60] flex flex-col gap-3 min-w-[320px] max-w-sm" style="animation: fade-in-down 0.4s ease-out;">
-            
 
-            
-        </div>
-        
-        <script>
-            setTimeout(() => {
-                const toast = document.getElementById('global-toast');
-                if (toast) {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateY(-20px)';
-                    toast.style.transition = 'all 0.4s ease-out';
-                    setTimeout(() => toast.remove(), 400);
-                }
-            }, 6000);
-        </script>
-        
-        <style>
-            @keyframes fade-in-down {
-                0% { opacity: 0; transform: translateY(-20px); }
-                100% { opacity: 1; transform: translateY(0); }
-            }
-        </style>
-    @endif
 
     <!-- Mobile Sidebar Backdrop -->
     <div id="mobile-sidebar-backdrop" class="fixed inset-0 bg-gray-900/50 z-40 lg:hidden hidden transition-opacity opacity-0"></div>
