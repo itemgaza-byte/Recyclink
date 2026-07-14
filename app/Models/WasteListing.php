@@ -18,7 +18,7 @@ class WasteListing extends Model
     {
         $clearCache = function () {
             // ponytail: clear marketplace cache tags when listing changes
-            Cache::tags(['marketplace_listings'])->flush();
+//             Cache::tags(['marketplace_listings'])->flush();
         };
 
         static::created($clearCache);

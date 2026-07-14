@@ -24,8 +24,8 @@ class NotificationService
         ]);
 
         // Invalidate notification cache so dropdown shows the new notification
-        \Illuminate\Support\Facades\Cache::forget("notif_unread_{$user->id}");
-        \Illuminate\Support\Facades\Cache::forget("notif_recent_{$user->id}");
+//         \Illuminate\Support\Facades\Cache::forget("notif_unread_{$user->id}");
+//         \Illuminate\Support\Facades\Cache::forget("notif_recent_{$user->id}");
 
         return $notification;
     }

@@ -22,8 +22,8 @@ class NotificationController extends Controller
 
         // Invalidate notification cache so dropdown reflects the change
         $userId = $request->user()->id;
-        Cache::forget("notif_unread_{$userId}");
-        Cache::forget("notif_recent_{$userId}");
+//         Cache::forget("notif_unread_{$userId}");
+//         Cache::forget("notif_recent_{$userId}");
         
         return redirect()->back();
     }

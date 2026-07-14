@@ -22,7 +22,7 @@ class ProfileService
         $profile->save();
 
         // ponytail: invalidate profile completion cache so middleware re-checks
-        Cache::forget("profile_complete_{$user->id}");
+//         Cache::forget("profile_complete_{$user->id}");
 
         return $profile;
     }
@@ -57,7 +57,7 @@ class ProfileService
         $profile->save();
 
         // ponytail: invalidate profile completion cache so middleware re-checks
-        Cache::forget("profile_complete_{$user->id}");
+//         Cache::forget("profile_complete_{$user->id}");
 
         return $profile;
     }
@@ -65,23 +65,21 @@ class ProfileService
     // ponytail: check profile completion — cached in Redis so middleware doesn't hit DB every request
     public function checkProfileCompletion(User $user): bool
     {
-        return Cache::remember("profile_complete_{$user->id}", 300, function () use ($user) {
-            if ($user->isAdmin()) {
-                return true;
-            }
+        if ($user->isAdmin()) {
+            return true;
+        }
 
-            if ($user->isSeller()) {
-                $profile = $user->sellerProfile;
-                return $profile && !empty($profile->business_name) && !empty($profile->address);
-            }
+        if ($user->isSeller()) {
+            $profile = $user->sellerProfile;
+            return $profile && !empty($profile->business_name) && !empty($profile->address);
+        }
 
-            if ($user->isBuyer()) {
-                $profile = $user->buyerProfile;
-                return $profile && !empty($profile->address);
-            }
+        if ($user->isBuyer()) {
+            $profile = $user->buyerProfile;
+            return $profile && !empty($profile->address);
+        }
 
-            return false;
-        });
+        return false;
     }
 }
 

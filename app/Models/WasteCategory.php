@@ -27,7 +27,7 @@ class WasteCategory extends Model
     {
         $clearCache = function () {
             // ponytail: clear active categories cache on modifications
-            Cache::forget('waste_categories_active');
+//             Cache::forget('waste_categories_active');
         };
 
         static::created($clearCache);

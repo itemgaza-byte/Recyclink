@@ -10,9 +10,7 @@ class EducationController extends Controller
     // ponytail: list all published articles, videos, and guides
     public function index()
     {
-        $allContents = \Illuminate\Support\Facades\Cache::remember('education_published', 600, function () {
-            return EducationContent::published()->latest()->get();
-        });
+        $allContents = EducationContent::published()->latest()->get();
 
         $articles = $allContents->where('content_type', 'article');
         $videos = $allContents->where('content_type', 'video');
