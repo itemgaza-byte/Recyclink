@@ -88,7 +88,15 @@ class BuyerPaymentController extends Controller implements HasMiddleware
                 // Idempotency-Key wajib ada untuk mencegah duplikat transaksi
                 $idempotencyKey = 'checkout-' . $order->order_code . '-' . $timestamp;
 
-                $response = \Illuminate\Support\Facades\Http::timeout(15)
+                // Setup HTTP Client dengan opsi Proxy jika FIXIE_URL atau QUOTAGUARDSTATIC_URL tersedia (untuk mengatasi masalah Dynamic IP Railway)
+                $proxyUrl = env('FIXIE_URL') ?: env('QUOTAGUARDSTATIC_URL');
+                $httpOptions = [];
+                if ($proxyUrl) {
+                    $httpOptions['proxy'] = $proxyUrl;
+                }
+
+                $response = \Illuminate\Support\Facades\Http::withOptions($httpOptions)
+                    ->timeout(15)
                     ->connectTimeout(10)
                     ->withHeaders([
                         'X-DOMPAY-API-Key' => $apiKey,
