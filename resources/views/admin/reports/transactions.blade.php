@@ -116,7 +116,7 @@
                             <td class="px-6 py-4 font-mono font-bold text-gray-900">{{ $order->order_code }}</td>
                             <td class="px-6 py-4 font-semibold text-gray-800">{{ $order->buyer->name ?? 'N/A' }}</td>
                             <td class="px-6 py-4 font-semibold text-gray-800">{{ $order->seller->name ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 font-bold text-brand">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 font-bold text-brand">Rp {{ number_format((float)($order->total_amount ?? 0), 0, ',', '.') }}</td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border {{ $status['bg'] }}">
                                     {{ $status['label'] }}

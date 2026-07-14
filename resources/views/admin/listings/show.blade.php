@@ -80,7 +80,7 @@
                     <div class="space-y-4">
                         <div class="p-4 bg-brand/5 border border-brand/20 rounded-xl">
                             <p class="text-xs font-bold text-brand mb-1">Harga per Satuan</p>
-                            <p class="text-2xl font-black text-gray-900">Rp {{ number_format($listing->price_per_unit, 0, ',', '.') }} <span class="text-lg text-gray-500 font-medium">/ {{ $listing->unit }}</span></p>
+                            <p class="text-2xl font-black text-gray-900">Rp {{ number_format((float)($listing->price_per_unit ?? 0), 0, ',', '.') }} <span class="text-lg text-gray-500 font-medium">/ {{ $listing->unit }}</span></p>
                         </div>
                         <div>
                             <p class="text-xs font-semibold text-gray-500 mb-1">Total Volume / Stok</p>

@@ -95,8 +95,8 @@
                             <td class="px-6 py-4 font-bold text-gray-900">{{ $list->title }}</td>
                             <td class="px-6 py-4 font-medium text-gray-800">{{ $list->seller->name ?? 'N/A' }}</td>
                             <td class="px-6 py-4 font-medium text-gray-600">{{ $list->city }}</td>
-                            <td class="px-6 py-4 font-bold text-brand">Rp {{ number_format($list->price_per_unit, 0, ',', '.') }} / {{ $list->unit }}</td>
-                            <td class="px-6 py-4 font-semibold text-gray-700">{{ number_format($list->quantity, 0, ',', '.') }} {{ $list->unit }}</td>
+                            <td class="px-6 py-4 font-bold text-brand">Rp {{ number_format((float)($list->price_per_unit ?? 0), 0, ',', '.') }} / {{ $list->unit }}</td>
+                            <td class="px-6 py-4 font-semibold text-gray-700">{{ number_format((float)($list->quantity ?? 0), 0, ',', '.') }} {{ $list->unit }}</td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border {{ $status['bg'] }}">
                                     {{ $status['label'] }}

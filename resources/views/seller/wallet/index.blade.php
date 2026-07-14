@@ -28,7 +28,7 @@
         </div>
         <div>
             <p class="text-white/80 text-xs font-bold uppercase tracking-wider">Saldo Utama</p>
-            <h2 class="text-3xl font-extrabold mt-2">Rp {{ number_format($wallet->balance, 0, ',', '.') }}</h2>
+            <h2 class="text-3xl font-extrabold mt-2">Rp {{ number_format((float)($wallet->balance ?? 0), 0, ',', '.') }}</h2>
         </div>
         <p class="text-xs text-white/70 mt-6 flex items-center gap-1.5"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Saldo dapat ditarik kapan saja.</p>
     </div>
@@ -40,7 +40,7 @@
         </div>
         <div>
             <p class="text-sm text-gray-500 font-semibold">Saldo Tertunda</p>
-            <h4 class="text-xl font-bold text-gray-900 mt-1">Rp {{ number_format($wallet->pending_balance, 0, ',', '.') }}</h4>
+            <h4 class="text-xl font-bold text-gray-900 mt-1">Rp {{ number_format((float)($wallet->pending_balance ?? 0), 0, ',', '.') }}</h4>
             <p class="text-[10px] text-gray-400 mt-1.5">Dana ditahan selama proses pengiriman.</p>
         </div>
     </div>
@@ -52,7 +52,7 @@
         </div>
         <div>
             <p class="text-sm text-gray-500 font-semibold">Total Ditarik</p>
-            <h4 class="text-xl font-bold text-gray-900 mt-1">Rp {{ number_format($wallet->total_withdrawn, 0, ',', '.') }}</h4>
+            <h4 class="text-xl font-bold text-gray-900 mt-1">Rp {{ number_format((float)($wallet->total_withdrawn ?? 0), 0, ',', '.') }}</h4>
             <p class="text-[10px] text-gray-400 mt-1.5">Total dana yang berhasil ditarik ke rekening.</p>
         </div>
     </div>
@@ -95,9 +95,9 @@
                     </div>
                     <div class="text-right">
                         <span class="font-extrabold text-sm {{ $txn->isCredit() ? 'text-emerald-600' : 'text-rose-600' }}">
-                            {{ $txn->isCredit() ? '+' : '-' }} Rp {{ number_format($txn->amount, 0, ',', '.') }}
+                            {{ $txn->isCredit() ? '+' : '-' }} Rp {{ number_format((float)($txn->amount ?? 0), 0, ',', '.') }}
                         </span>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Saldo: Rp {{ number_format($txn->balance_after, 0, ',', '.') }}</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Saldo: Rp {{ number_format((float)($txn->balance_after ?? 0), 0, ',', '.') }}</p>
                     </div>
                 </div>
             @endforeach

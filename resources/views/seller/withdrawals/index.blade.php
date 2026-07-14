@@ -64,9 +64,9 @@
                                 <div class="text-xs text-gray-500 font-medium mt-0.5">{{ $w->bank_account_number }} a/n {{ $w->bank_account_name }}</div>
                             </td>
                             <td class="px-6 py-4 font-extrabold text-brand">
-                                Rp {{ number_format($w->net_amount ?? $w->amount, 0, ',', '.') }}
+                                Rp {{ number_format((float)($w->net_amount ?? $w->amount ?? 0), 0, ',', '.') }}
                                 @if($w->admin_fee > 0)
-                                    <span class="block text-[10px] text-gray-400 font-semibold mt-0.5">Biaya: Rp {{ number_format($w->admin_fee, 0, ',', '.') }}</span>
+                                    <span class="block text-[10px] text-gray-400 font-semibold mt-0.5">Biaya: Rp {{ number_format((float)($w->admin_fee ?? 0), 0, ',', '.') }}</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4">

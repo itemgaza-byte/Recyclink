@@ -59,9 +59,9 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-bold text-gray-900">{{ $item->listing->title }}</p>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ number_format($item->quantity, 2) }} {{ $item->listing->unit }} × Rp {{ number_format($item->price_per_unit ?? $item->listing->price_per_unit, 0, ',', '.') }}</p>
+                            <p class="text-xs text-gray-500 mt-0.5">{{ number_format((float)($item->quantity ?? 0), 2) }} {{ $item->listing->unit ?? '' }} × Rp {{ number_format((float)($item->price_per_unit ?? $item->listing->price_per_unit ?? 0), 0, ',', '.') }}</p>
                         </div>
-                        <p class="text-sm font-bold text-brand shrink-0">Rp {{ number_format($item->subtotal ?? ($item->quantity * ($item->price_per_unit ?? $item->listing->price_per_unit)), 0, ',', '.') }}</p>
+                        <p class="text-sm font-bold text-brand shrink-0">Rp {{ number_format((float)($item->subtotal ?? ($item->quantity * ($item->price_per_unit ?? $item->listing->price_per_unit ?? 0))), 0, ',', '.') }}</p>
                     </div>
                     @endif
                     @endforeach
@@ -140,23 +140,23 @@
                 <div class="px-5 py-4 space-y-3 text-sm">
                     <div class="flex justify-between text-gray-600">
                         <span>Subtotal</span>
-                        <span class="font-semibold">Rp {{ number_format($order->subtotal ?? $order->total_amount, 0, ',', '.') }}</span>
+                        <span class="font-semibold">Rp {{ number_format((float)($order->subtotal ?? $order->total_amount ?? 0), 0, ',', '.') }}</span>
                     </div>
                     @if($order->shipping_cost)
                     <div class="flex justify-between text-gray-600">
                         <span>Ongkos Kirim</span>
-                        <span class="font-semibold">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
+                        <span class="font-semibold">Rp {{ number_format((float)($order->shipping_cost ?? 0), 0, ',', '.') }}</span>
                     </div>
                     @endif
                     @if($order->platform_fee)
                     <div class="flex justify-between text-gray-600">
                         <span>Biaya Platform</span>
-                        <span class="font-semibold">Rp {{ number_format($order->platform_fee, 0, ',', '.') }}</span>
+                        <span class="font-semibold">Rp {{ number_format((float)($order->platform_fee ?? 0), 0, ',', '.') }}</span>
                     </div>
                     @endif
                     <div class="pt-3 border-t border-gray-100 flex justify-between font-bold text-gray-900">
                         <span>Total</span>
-                        <span class="text-brand text-base">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                        <span class="text-brand text-base">Rp {{ number_format((float)($order->total_amount ?? 0), 0, ',', '.') }}</span>
                     </div>
                 </div>
             </div>

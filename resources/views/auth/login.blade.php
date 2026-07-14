@@ -66,7 +66,7 @@
 
             
 
-            <form action="{{ route('login') }}" method="POST" class="space-y-6">
+            <form action="{{ route('login') }}" method="POST" class="space-y-6" data-turbo="false">
                 @csrf
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Alamat Email</label>

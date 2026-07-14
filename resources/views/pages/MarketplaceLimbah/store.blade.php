@@ -117,11 +117,11 @@
                             <div class="flex items-end justify-between gap-3">
                                 <div>
                                     <p class="text-xl font-bold text-brand leading-tight">
-                                        Rp {{ number_format($l->price_per_unit, 0, ',', '.') }} <span class="text-xs font-normal text-gray-400">/ {{ $l->unit }}</span>
+                                        Rp {{ number_format((float)($l->price_per_unit ?? 0), 0, ',', '.') }} <span class="text-xs font-normal text-gray-400">/ {{ $l->unit }}</span>
                                     </p>
                                     <div class="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
                                         <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-                                        Stok: {{ number_format($l->quantity, 0, ',', '.') }} {{ $l->unit }}
+                                        Stok: {{ number_format((float)($l->quantity ?? 0), 0, ',', '.') }} {{ $l->unit }}
                                     </div>
                                 </div>
                                 <span class="shrink-0 text-xs font-semibold border border-gray-200 text-gray-600 group-hover:bg-brand group-hover:text-white group-hover:border-brand px-4 py-1.5 rounded-lg transition-all">Detail</span>

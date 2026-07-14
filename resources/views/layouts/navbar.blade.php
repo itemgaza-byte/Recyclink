@@ -75,7 +75,7 @@
                                                         <p class="text-[13px] text-gray-800 line-clamp-2 leading-snug">{{ $fav->listing->title }}</p>
                                                         <p class="text-xs text-gray-400 mt-1">{{ $fav->listing->category->category_name ?? '' }}</p>
                                                     </div>
-                                                    <p class="text-[13px] font-bold text-gray-900 shrink-0 whitespace-nowrap">Rp{{ number_format($fav->listing->price_per_unit, 0, ',', '.') }}</p>
+                                                    <p class="text-[13px] font-bold text-gray-900 shrink-0 whitespace-nowrap">Rp{{ number_format((float)($fav->listing->price_per_unit ?? 0), 0, ',', '.') }}</p>
                                                 </div>
                                             </a>
                                             @endif
@@ -119,7 +119,7 @@
                                                         <p class="text-[13px] text-gray-800 line-clamp-2 leading-snug">{{ $item->title }}</p>
                                                         <p class="text-xs text-gray-400 mt-1">{{ $item->category->category_name ?? '' }}</p>
                                                     </div>
-                                                    <p class="text-[13px] font-bold text-gray-900 shrink-0 whitespace-nowrap">{{ $cartData[$item->id]['quantity'] ?? 1 }} x Rp{{ number_format($item->price_per_unit, 0, ',', '.') }}</p>
+                                                    <p class="text-[13px] font-bold text-gray-900 shrink-0 whitespace-nowrap">{{ $cartData[$item->id]['quantity'] ?? 1 }} x Rp{{ number_format((float)($item->price_per_unit ?? 0), 0, ',', '.') }}</p>
                                                 </div>
                                             </a>
                                             @endforeach

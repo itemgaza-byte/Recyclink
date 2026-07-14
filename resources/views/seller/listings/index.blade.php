@@ -70,7 +70,7 @@
                     <h4 class="font-bold text-gray-900 text-lg mb-1 line-clamp-1" title="{{ $listing->title }}">{{ $listing->title }}</h4>
                     
                     <div class="text-brand font-extrabold text-lg mb-3">
-                        Rp {{ number_format($listing->price_per_unit, 0, ',', '.') }} <span class="text-sm text-gray-500 font-medium">/ {{ $listing->unit }}</span>
+                        Rp {{ number_format((float)($listing->price_per_unit ?? 0), 0, ',', '.') }} <span class="text-sm text-gray-500 font-medium">/ {{ $listing->unit }}</span>
                     </div>
 
                     <div class="space-y-2 mb-5">

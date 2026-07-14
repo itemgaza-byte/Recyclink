@@ -64,7 +64,7 @@
 
             
 
-            <form action="{{ route('register') }}" method="POST" class="space-y-6">
+            <form action="{{ route('register') }}" method="POST" class="space-y-6" data-turbo="false">
                 @csrf
                 
                 <div class="mb-6">

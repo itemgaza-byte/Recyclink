@@ -66,10 +66,10 @@
                         <div class="flex items-end justify-between mt-2">
                             <div>
                                 <p class="text-xl font-bold text-gray-900 leading-tight group-hover:text-brand transition-colors">
-                                    Rp {{ number_format($listing->price_per_unit, 0, ',', '.') }}<span class="text-xs font-normal text-gray-400"> / {{ $listing->unit }}</span>
+                                    Rp {{ number_format((float)($listing->price_per_unit ?? 0), 0, ',', '.') }}<span class="text-xs font-normal text-gray-400"> / {{ $listing->unit }}</span>
                                 </p>
                                 <p class="text-xs text-gray-400 mt-0.5">
-                                    Stok: {{ number_format($listing->quantity, 0, ',', '.') }} {{ $listing->unit }}
+                                    Stok: {{ number_format((float)($listing->quantity ?? 0), 0, ',', '.') }} {{ $listing->unit }}
                                 </p>
                             </div>
                             <div class="w-8 h-8 rounded-full bg-brand/10 flex items-center justify-center group-hover:bg-brand transition-colors shrink-0">

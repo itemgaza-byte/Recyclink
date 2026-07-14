@@ -27,7 +27,7 @@
         <div class="p-6">
             <div class="text-center mb-6">
                 <p class="text-gray-500 text-sm mb-1">Total Pembayaran</p>
-                <h1 class="text-4xl font-extrabold text-gray-900">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</h1>
+                <h1 class="text-4xl font-extrabold text-gray-900">Rp {{ number_format((float)($order->total_amount ?? 0), 0, ',', '.') }}</h1>
             </div>
 
             <div class="space-y-4 mb-8">
