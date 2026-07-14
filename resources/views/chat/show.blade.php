@@ -44,7 +44,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-800">{{ $listing->title }}</p>
-                        <p class="text-sm font-bold text-brand mt-0.5">Rp {{ number_format($listing->price_per_unit, 0, ',', '.') }} / {{ $listing->unit }}</p>
+                        <p class="text-sm font-bold text-brand mt-0.5">Rp {{ number_format((float)($listing->price_per_unit ?? 0), 0, ',', '.') }} / {{ $listing->unit }}</p>
                     </div>
                 </div>
                 <a href="{{ route('marketplace.show', $listing->id) }}" target="_blank" class="px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shrink-0">

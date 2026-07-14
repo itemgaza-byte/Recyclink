@@ -45,9 +45,9 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 font-extrabold {{ $txn->isCredit() ? 'text-emerald-600' : 'text-rose-600' }}">
-                                {{ $txn->isCredit() ? '+' : '-' }} Rp {{ number_format($txn->amount, 0, ',', '.') }}
+                                {{ $txn->isCredit() ? '+' : '-' }} Rp {{ number_format((float)($txn->amount ?? 0), 0, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 font-semibold text-gray-700">Rp {{ number_format($txn->balance_after, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 font-semibold text-gray-700">Rp {{ number_format((float)($txn->balance_after ?? 0), 0, ',', '.') }}</td>
                             <td class="px-6 py-4 text-xs text-gray-500">
                                 {{ $txn->created_at->format('d M Y, H:i') }}
                             </td>

@@ -49,8 +49,8 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <h5 class="font-bold text-gray-900 leading-snug">{{ $item->waste_name_snapshot }}</h5>
-                            <p class="text-sm text-gray-500 mt-1 font-semibold">Rp {{ number_format($item->price_per_unit_snapshot, 0, ',', '.') }} / {{ $item->unit }}</p>
-                            <p class="text-xs text-gray-400 mt-0.5">Jumlah: {{ number_format($item->quantity, 0, ',', '.') }} {{ $item->unit }}</p>
+                            <p class="text-sm text-gray-500 mt-1 font-semibold">Rp {{ number_format((float)($item->price_per_unit_snapshot ?? 0), 0, ',', '.') }} / {{ $item->unit }}</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Jumlah: {{ number_format((float)($item->quantity ?? 0), 0, ',', '.') }} {{ $item->unit }}</p>
                         </div>
                     </div>
                 @endif
@@ -166,20 +166,20 @@
                 <div class="space-y-2.5 text-sm text-gray-600">
                     <div class="flex justify-between">
                         <span>Subtotal Produk</span>
-                        <span class="font-semibold text-gray-800">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
+                        <span class="font-semibold text-gray-800">Rp {{ number_format((float)($order->subtotal ?? 0), 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span>Biaya Penanganan (5%)</span>
-                        <span class="font-semibold text-gray-800">Rp {{ number_format($order->platform_fee, 0, ',', '.') }}</span>
+                        <span class="font-semibold text-gray-800">Rp {{ number_format((float)($order->platform_fee ?? 0), 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span>Biaya Pengiriman</span>
-                        <span class="font-semibold text-gray-800">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
+                        <span class="font-semibold text-gray-800">Rp {{ number_format((float)($order->shipping_cost ?? 0), 0, ',', '.') }}</span>
                     </div>
                     <hr class="border-gray-100 my-2">
                     <div class="flex justify-between text-base font-bold text-gray-900">
                         <span>Total Pendapatan</span>
-                        <span class="text-brand">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                        <span class="text-brand">Rp {{ number_format((float)($order->total_amount ?? 0), 0, ',', '.') }}</span>
                     </div>
                 </div>
             </div>

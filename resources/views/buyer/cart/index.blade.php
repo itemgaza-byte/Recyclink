@@ -86,7 +86,7 @@
                                     <a href="{{ route('marketplace.show', $listing->id) }}" class="text-base text-gray-700 hover:text-brand line-clamp-2 leading-relaxed max-w-xl">{{ $listing->title }}</a>
                                     <p class="text-sm text-gray-500 mt-2">{{ $listing->category->category_name ?? '' }}</p>
                                 </div>
-                                <div class="text-lg font-extrabold text-gray-900 shrink-0">Rp{{ number_format($listing->price_per_unit, 0, ',', '.') }}</div>
+                                <div class="text-lg font-extrabold text-gray-900 shrink-0">Rp{{ number_format((float)($listing->price_per_unit ?? 0), 0, ',', '.') }}</div>
                             </div>
                             
                             <div class="flex justify-end items-center gap-5 mt-4">

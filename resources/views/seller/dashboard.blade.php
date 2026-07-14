@@ -70,7 +70,7 @@
             </div>
             <div>
                 <p class="text-sm text-gray-500 font-medium">Saldo Dompet</p>
-                <h4 class="text-2xl font-bold text-gray-900 mt-1">Rp {{ number_format($user->wallet->balance ?? 0, 0, ',', '.') }}</h4>
+                <h4 class="text-2xl font-bold text-gray-900 mt-1">Rp {{ number_format((float)($user->wallet->balance ?? 0), 0, ',', '.') }}</h4>
             </div>
         </div>
     </div>

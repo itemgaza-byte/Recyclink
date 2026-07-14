@@ -16,6 +16,8 @@
             if (!loader) return;
             loader.classList.remove('hidden');
             setTimeout(() => loader.classList.add('flex', 'opacity-100'), 10);
+            // Safety: always hide after 8 seconds to prevent permanent spinner
+            setTimeout(hideLoader, 8000);
         }
 
         function hideLoader() {
@@ -24,12 +26,16 @@
             loader.classList.add('hidden', 'opacity-0');
         }
 
-        // Rely on Turbo lifecycle events
+        // Turbo lifecycle events
         document.addEventListener("turbo:visit", showLoader);
         document.addEventListener("turbo:submit-start", showLoader);
         document.addEventListener("turbo:load", hideLoader);
+        document.addEventListener("turbo:frame-load", hideLoader);
         
-        // Handle browser back/forward cache
+        // Handle browser back/forward cache and normal page loads
         window.addEventListener('pageshow', hideLoader);
+        
+        // Hide on initial load in case leftover from previous page
+        hideLoader();
     });
 </script>

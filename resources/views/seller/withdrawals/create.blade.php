@@ -22,7 +22,7 @@
         <div class="md:col-span-1 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
             <div>
                 <p class="text-gray-400 font-semibold text-xs uppercase tracking-wider">Saldo Tersedia</p>
-                <h4 class="text-xl font-extrabold text-gray-900 mt-1">Rp {{ number_format($wallet->balance, 0, ',', '.') }}</h4>
+                <h4 class="text-xl font-extrabold text-gray-900 mt-1">Rp {{ number_format((float)($wallet->balance ?? 0), 0, ',', '.') }}</h4>
             </div>
             <hr class="border-gray-100">
             <div class="text-xs text-gray-500 leading-relaxed space-y-2">

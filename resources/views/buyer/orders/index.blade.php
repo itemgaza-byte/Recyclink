@@ -63,9 +63,9 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold text-gray-800 truncate">{{ $item->listing->title }}</p>
-                        <p class="text-xs text-gray-500">{{ number_format($item->quantity, 2) }} {{ $item->listing->unit }}</p>
+                        <p class="text-xs text-gray-500">{{ number_format((float)($item->quantity ?? 0), 2) }} {{ $item->listing->unit ?? '' }}</p>
                     </div>
-                    <p class="text-sm font-bold text-brand shrink-0">Rp {{ number_format($item->subtotal ?? ($item->quantity * $item->price_per_unit), 0, ',', '.') }}</p>
+                    <p class="text-sm font-bold text-brand shrink-0">Rp {{ number_format((float)($item->subtotal ?? ($item->quantity * $item->price_per_unit)), 0, ',', '.') }}</p>
                     @endif
                 </div>
                 @endforeach
@@ -75,7 +75,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3 border-t border-gray-100">
                 <div>
                     <p class="text-xs text-gray-500">Total Pembayaran</p>
-                    <p class="text-base font-bold text-gray-900">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
+                    <p class="text-base font-bold text-gray-900">Rp {{ number_format((float)($order->total_amount ?? 0), 0, ',', '.') }}</p>
                 </div>
                 <a href="{{ route('buyer.orders.show', $order->id) }}" class="text-sm font-bold text-brand hover:text-brand-hover transition-colors border border-brand px-4 py-2 rounded-xl hover:bg-brand hover:text-white">
                     Lihat Detail

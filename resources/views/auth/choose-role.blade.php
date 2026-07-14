@@ -44,7 +44,7 @@
         </p>
     </div>
 
-    <form action="{{ route('choose.role.store') }}" method="POST" class="w-full max-w-4xl">
+    <form action="{{ route('choose.role.store') }}" method="POST" class="w-full max-w-4xl" data-turbo="false">
         @csrf
         <input type="hidden" name="role" id="selectedRole" value="">
 

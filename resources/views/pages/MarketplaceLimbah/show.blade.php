@@ -66,7 +66,7 @@
           <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 leading-tight">{{ $listing->title }}</h1>
           
           <div class="mb-6 flex items-end gap-3">
-            <span class="text-3xl sm:text-4xl font-bold text-brand">Rp {{ number_format($listing->price_per_unit, 0, ',', '.') }}</span>
+            <span class="text-3xl sm:text-4xl font-bold text-brand">Rp {{ number_format((float)($listing->price_per_unit ?? 0), 0, ',', '.') }}</span>
             <span class="text-lg text-gray-500 mb-1">/ {{ $listing->unit }}</span>
           </div>
           
@@ -84,13 +84,13 @@
               {{-- Volume --}}
               <div>
                 <p class="text-xs text-brand-hover uppercase font-semibold tracking-wider mb-1">Volume</p>
-                <p class="text-sm font-bold text-gray-900">{{ number_format($listing->quantity, 0, ',', '.') }} {{ $listing->unit }}</p>
+                <p class="text-sm font-bold text-gray-900">{{ number_format((float)($listing->quantity ?? 0), 0, ',', '.') }} {{ $listing->unit }}</p>
               </div>
 
               {{-- Harga per satuan --}}
               <div>
                 <p class="text-xs text-brand-hover uppercase font-semibold tracking-wider mb-1">Harga / Satuan</p>
-                <p class="text-sm font-bold text-gray-900">Rp {{ number_format($listing->price_per_unit, 0, ',', '.') }} / {{ $listing->unit }}</p>
+                <p class="text-sm font-bold text-gray-900">Rp {{ number_format((float)($listing->price_per_unit ?? 0), 0, ',', '.') }} / {{ $listing->unit }}</p>
               </div>
 
               {{-- Min. Order --}}

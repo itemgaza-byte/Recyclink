@@ -28,7 +28,7 @@
         <div class="px-6 py-5 bg-brand/5 border-b border-gray-100 flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600 font-semibold mb-1">Total Tagihan</p>
-                <p class="text-2xl font-bold text-brand">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
+                <p class="text-2xl font-bold text-brand">Rp {{ number_format((float)($order->total_amount ?? 0), 0, ',', '.') }}</p>
             </div>
             <div class="text-right">
                 <p class="text-xs text-gray-500 mb-1">Order ID</p>

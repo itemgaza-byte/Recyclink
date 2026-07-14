@@ -197,7 +197,7 @@
                     <div class="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-gray-50">
                         <div>
                             <p class="text-gray-400">Total Nominal:</p>
-                            <p class="font-bold text-gray-800 mt-0.5">Rp {{ number_format($complaint->order->total_amount, 0, ',', '.') }}</p>
+                            <p class="font-bold text-gray-800 mt-0.5">Rp {{ number_format((float)($complaint->order->total_amount ?? 0), 0, ',', '.') }}</p>
                         </div>
                         <div>
                             <p class="text-gray-400">Status Pesanan:</p>

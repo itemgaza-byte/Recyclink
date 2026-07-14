@@ -56,7 +56,7 @@
                         {{ $listing->category->category_name ?? '-' }}
                     </td>
                     <td class="px-6 py-4">
-                        <p class="font-bold text-brand">Rp {{ number_format($listing->price_per_unit, 0, ',', '.') }}</p>
+                        <p class="font-bold text-brand">Rp {{ number_format((float)($listing->price_per_unit ?? 0), 0, ',', '.') }}</p>
                         <p class="text-xs text-gray-500">Stok: {{ $listing->quantity }} {{ $listing->unit }}</p>
                     </td>
                     <td class="px-6 py-4">

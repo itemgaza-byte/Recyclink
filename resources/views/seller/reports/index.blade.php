@@ -50,7 +50,7 @@
             </div>
             <div>
                 <p class="text-sm font-bold text-gray-500 uppercase tracking-wider">Total Penjualan Berhasil</p>
-                <h4 class="text-2xl font-extrabold text-gray-900">{{ number_format($totalSales) }} Transaksi</h4>
+                <h4 class="text-2xl font-extrabold text-gray-900">{{ number_format((float)$totalSales) }} Transaksi</h4>
             </div>
         </div>
     </div>
@@ -63,7 +63,7 @@
             </div>
             <div>
                 <p class="text-sm font-bold text-gray-500 uppercase tracking-wider">Pendapatan Kotor</p>
-                <h4 class="text-2xl font-extrabold text-gray-900">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</h4>
+                <h4 class="text-2xl font-extrabold text-gray-900">Rp {{ number_format((float)$totalRevenue, 0, ',', '.') }}</h4>
             </div>
         </div>
     </div>
@@ -94,7 +94,7 @@
                         <p class="text-xs text-gray-500">{{ $order->created_at->format('d M Y') }}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-emerald-600">+Rp{{ number_format($order->subtotal, 0, ',', '.') }}</p>
+                        <p class="font-bold text-emerald-600">+Rp{{ number_format((float)($order->subtotal ?? 0), 0, ',', '.') }}</p>
                     </div>
                 </div>
                 @endforeach

@@ -56,12 +56,12 @@
                             <td class="px-6 py-4">
                                 @if($item)
                                     <div class="font-semibold text-gray-800">{{ $item->waste_name_snapshot }}</div>
-                                    <div class="text-xs text-gray-400 mt-0.5">{{ number_format($item->quantity, 0, ',', '.') }} {{ $item->unit }}</div>
+                                    <div class="text-xs text-gray-400 mt-0.5">{{ number_format((float)($item->quantity ?? 0), 0, ',', '.') }} {{ $item->unit }}</div>
                                 @else
                                     <span class="text-gray-400 italic">Tidak ada produk</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 font-bold text-brand">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 font-bold text-brand">Rp {{ number_format((float)($order->total_amount ?? 0), 0, ',', '.') }}</td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border {{ $status['bg'] }}">
                                     {{ $status['label'] }}
