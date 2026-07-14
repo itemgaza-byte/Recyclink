@@ -2,6 +2,13 @@
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.14.5/dist/sweetalert2.all.min.js"></script>
 
+<div id="flash-messages" class="hidden">
+    @if(session('success')) <span class="flash-success">{{ session('success') }}</span> @endif
+    @if(session('error')) <span class="flash-error">{{ session('error') }}</span> @endif
+    @if(session('info')) <span class="flash-info">{{ session('info') }}</span> @endif
+    @if($errors->any()) <span class="flash-validation">Terdapat kesalahan pada input Anda</span> @endif
+</div>
+
 <script>
     document.addEventListener("turbo:load", initSweetAlerts);
     if (!window.Turbo) initSweetAlerts();
@@ -19,34 +26,20 @@
             }
         });
 
-        // Tampilkan Flash Message sebagai Toast
-        @if(session('success'))
-            Toast.fire({
-                icon: 'success',
-                title: '{{ session('success') }}'
-            });
-        @endif
+        const flashContainer = document.getElementById('flash-messages');
+        if (!flashContainer) return;
 
-        @if(session('error'))
-            Toast.fire({
-                icon: 'error',
-                title: '{{ session('error') }}'
-            });
-        @endif
+        const success = flashContainer.querySelector('.flash-success');
+        if (success) { Toast.fire({ icon: 'success', title: success.innerText }); success.remove(); }
 
-        @if(session('info'))
-            Toast.fire({
-                icon: 'info',
-                title: '{{ session('info') }}'
-            });
-        @endif
+        const error = flashContainer.querySelector('.flash-error');
+        if (error) { Toast.fire({ icon: 'error', title: error.innerText }); error.remove(); }
 
-        @if($errors->any())
-            Toast.fire({
-                icon: 'error',
-                title: 'Terdapat kesalahan pada input Anda'
-            });
-        @endif
+        const info = flashContainer.querySelector('.flash-info');
+        if (info) { Toast.fire({ icon: 'info', title: info.innerText }); info.remove(); }
+
+        const validation = flashContainer.querySelector('.flash-validation');
+        if (validation) { Toast.fire({ icon: 'error', title: validation.innerText }); validation.remove(); }
     }
 
     // Global Confirm Handler untuk elemen dengan data-confirm

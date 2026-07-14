@@ -75,7 +75,7 @@
                         @endif
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <a href="{{ route('admin.listings.verification.show', $listing) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 hover:text-brand hover:border-brand hover:bg-brand/5 rounded-lg text-sm font-bold transition-colors shadow-sm">
+                        <a href="{{ route('admin.listings.verification.show', $listing) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 hover:text-brand hover:border-brand hover:bg-brand/5 rounded-lg text-sm font-bold transition-colors shadow-sm whitespace-nowrap">
                             <i data-lucide="eye" class="w-4 h-4"></i> Cek Konten
                         </a>
                     </td>

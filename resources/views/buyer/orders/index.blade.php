@@ -59,7 +59,11 @@
                 <div class="flex items-center gap-3 mb-3 last:mb-0">
                     @if($item->listing ?? false)
                     <div class="w-14 h-14 bg-gray-100 rounded-xl overflow-hidden shrink-0">
-                        <img src="{{ $item->listing->primaryImage ? asset('storage/'.$item->listing->primaryImage->image_url) : '' }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                        @php
+                            $imgUrl = $item->listing->primaryImage ? $item->listing->primaryImage->image_url : '';
+                            $src = \Illuminate\Support\Str::startsWith($imgUrl, 'http') ? $imgUrl : asset('storage/' . $imgUrl);
+                        @endphp
+                        <img src="{{ $imgUrl ? $src : '' }}" class="w-full h-full object-cover" onerror="this.style.display='none'">
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold text-gray-800 truncate">{{ $item->listing->title }}</p>
