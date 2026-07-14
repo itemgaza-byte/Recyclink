@@ -163,7 +163,17 @@
 
 @push('scripts')
 <script>
+    const dt = new DataTransfer();
+
     document.getElementById('dropzone-file').addEventListener('change', function(e) {
+        // Append new files to DataTransfer
+        for(let i = 0; i < this.files.length; i++) {
+            dt.items.add(this.files[i]);
+        }
+        
+        // Update the input files with the accumulated files
+        this.files = dt.files;
+
         const fileList = document.getElementById('file-list');
         fileList.innerHTML = '';
         if(this.files.length > 0) {
