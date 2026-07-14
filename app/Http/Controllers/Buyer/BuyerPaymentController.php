@@ -108,18 +108,11 @@ class BuyerPaymentController extends Controller implements HasMiddleware
 
                 $responseData = $response->json();
 
-                // Cari URL redirect dari response
-                $redirectLink = $responseData['paymentUrl']
-                    ?? $responseData['payment_url']
-                    ?? $responseData['checkoutUrl']
-                    ?? $responseData['checkout_url']
-                    ?? $responseData['data']['paymentUrl'] ?? null
-                    ?? $responseData['data']['payment_url'] ?? null
-                    ?? $responseData['data']['checkout_url'] ?? null;
+                // SEMENTARA: Kita dump seluruh response dari DompetX untuk melihat kunci (key) apa yang menyimpan URL Checkout-nya
+                // Karena sepertinya URL-nya tidak terbaca sehingga redirect gagal atau me-redirect ke halaman yang salah.
+                dd("BERHASIL TERHUBUNG KE DOMPETX! Ini respon aslinya:", $responseData);
 
-                if ($response->successful() && $redirectLink) {
-                    return redirect($redirectLink);
-                }
+                // Cari URL redirect dari response
 
                 // Log detail lengkap untuk debugging
                 \Illuminate\Support\Facades\Log::error('DompetX Checkout Failed', [
