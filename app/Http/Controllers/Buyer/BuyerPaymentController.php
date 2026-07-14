@@ -73,11 +73,17 @@ class BuyerPaymentController extends Controller implements HasMiddleware
                 // Tambahkan suffix attempt untuk menghindari 409 duplicate transaction reference dari DompetX jika user mencoba bayar ulang
                 $referenceCode = $order->order_code . '_attempt_' . time();
 
-                // Payload checkout hanya membutuhkan amount, currency, dan reference
+                // Payload checkout
                 $payload = [
                     'amount' => (int) $order->total_amount,
                     'currency' => 'IDR',
                     'reference' => $referenceCode,
+                    'method' => strtoupper($method),
+                    'paymentMethod' => strtoupper($method),
+                    'payment_method' => strtoupper($method),
+                    'return_url' => route('buyer.orders.show', $order->id),
+                    'redirectUrl' => route('buyer.orders.show', $order->id),
+                    'success_redirect_url' => route('buyer.orders.show', $order->id),
                 ];
 
                 $body = json_encode($payload);
@@ -88,7 +94,6 @@ class BuyerPaymentController extends Controller implements HasMiddleware
                 // Idempotency-Key wajib ada untuk mencegah duplikat transaksi
                 $idempotencyKey = 'checkout-' . $order->order_code . '-' . $timestamp;
 
-                // Setup HTTP Client dengan opsi Proxy jika FIXIE_URL atau QUOTAGUARDSTATIC_URL tersedia (untuk mengatasi masalah Dynamic IP Railway)
                 $proxyUrl = env('FIXIE_URL') ?: env('QUOTAGUARDSTATIC_URL');
                 $httpOptions = [];
                 if ($proxyUrl) {
@@ -104,17 +109,24 @@ class BuyerPaymentController extends Controller implements HasMiddleware
                         'X-DOMPAY-Timestamp' => $timestamp,
                         'Idempotency-Key' => $idempotencyKey,
                         'Content-Type' => 'application/json',
-                    ])->post($apiUrl, $payload);
+                    ])
+                    ->post($apiUrl, $payload);
 
                 $responseData = $response->json();
 
-                // SEMENTARA: Kita dump seluruh response dari DompetX untuk melihat kunci (key) apa yang menyimpan URL Checkout-nya
-                // Karena sepertinya URL-nya tidak terbaca sehingga redirect gagal atau me-redirect ke halaman yang salah.
-                dd("BERHASIL TERHUBUNG KE DOMPETX! Ini respon aslinya:", $responseData);
+                // Cari URL redirect dari response (sesuai foto, key-nya adalah "payment_url")
+                $redirectLink = $responseData['paymentUrl']
+                    ?? $responseData['payment_url']
+                    ?? $responseData['checkoutUrl']
+                    ?? $responseData['checkout_url']
+                    ?? $responseData['data']['paymentUrl'] ?? null
+                    ?? $responseData['data']['payment_url'] ?? null
+                    ?? $responseData['data']['checkout_url'] ?? null;
 
-                // Cari URL redirect dari response
-
-                // Log detail lengkap untuk debugging
+                if ($response->successful() && $redirectLink) {
+                    // Redirect langsung ke URL DompetX
+                    return redirect($redirectLink);
+                }
                 \Illuminate\Support\Facades\Log::error('DompetX Checkout Failed', [
                     'http_status' => $response->status(),
                     'response_body' => $responseData,
@@ -127,26 +139,25 @@ class BuyerPaymentController extends Controller implements HasMiddleware
                 $apiError = $responseData['message'] ?? $responseData['error'] ?? json_encode($responseData);
                 $errorMsg = "Pembayaran gagal (HTTP {$response->status()}): {$apiError}";
                 
-                // SEMENTARA: Gunakan dd() agar pesan error pasti terlihat oleh user (jika flash session tidak jalan)
-                dd("DOMPETX ERROR DETAIL:", $errorMsg, "Payload Response:", $responseData, "Pastikan IP Fixie sudah didaftarkan di DompetX!");
+                return redirect()->back()->with('error', $errorMsg);
 
             } catch (\Illuminate\Http\Client\ConnectionException $e) {
                 \Illuminate\Support\Facades\Log::error('DompetX Connection Error', [
                     'message' => $e->getMessage(),
                 ]);
-                dd("KONEKSI ERROR (Mungkin Proxy Fixie salah setting):", $e->getMessage());
+                return redirect()->back()->with('error', 'Tidak dapat terhubung ke server pembayaran. Coba lagi nanti.');
 
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('DompetX Checkout Exception', [
                     'message' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                dd("SYSTEM ERROR:", $e->getMessage());
+                return redirect()->back()->with('error', 'Sistem pembayaran sedang gangguan: ' . $e->getMessage());
             }
         }
 
         // Jika mode masih sandbox di env, tetap berikan error agar admin tahu harus mengubah ke live
-        dd("MODE PEMBAYARAN MASIH SANDBOX. Silakan set DOMPETX_MODE=live di Environment Variables Railway.");
+        return redirect()->back()->with('error', 'Mode pembayaran belum disetting ke live. Silakan hubungi admin.');
     }
 
     // ponytail: show payment proof details
