@@ -133,25 +133,27 @@ class BuyerPaymentController extends Controller implements HasMiddleware
                 // Tampilkan error detail ke user agar bisa di-diagnosa
                 $apiError = $responseData['message'] ?? $responseData['error'] ?? json_encode($responseData);
                 $errorMsg = "Pembayaran gagal (HTTP {$response->status()}): {$apiError}";
-                return redirect()->back()->with('error', $errorMsg);
+                
+                // SEMENTARA: Gunakan dd() agar pesan error pasti terlihat oleh user (jika flash session tidak jalan)
+                dd("DOMPETX ERROR DETAIL:", $errorMsg, "Payload Response:", $responseData, "Pastikan IP Fixie sudah didaftarkan di DompetX!");
 
             } catch (\Illuminate\Http\Client\ConnectionException $e) {
                 \Illuminate\Support\Facades\Log::error('DompetX Connection Error', [
                     'message' => $e->getMessage(),
                 ]);
-                return redirect()->back()->with('error', 'Tidak dapat terhubung ke server pembayaran. Coba lagi nanti.');
+                dd("KONEKSI ERROR (Mungkin Proxy Fixie salah setting):", $e->getMessage());
 
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('DompetX Checkout Exception', [
                     'message' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
-                return redirect()->back()->with('error', 'Sistem pembayaran sedang gangguan: ' . $e->getMessage());
+                dd("SYSTEM ERROR:", $e->getMessage());
             }
         }
 
         // Jika mode masih sandbox di env, tetap berikan error agar admin tahu harus mengubah ke live
-        return redirect()->back()->with('error', 'Mode pembayaran belum disetting ke live. Silakan hubungi admin.');
+        dd("MODE PEMBAYARAN MASIH SANDBOX. Silakan set DOMPETX_MODE=live di Environment Variables Railway.");
     }
 
     // ponytail: show payment proof details
