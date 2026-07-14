@@ -38,7 +38,7 @@
             <!-- Header Card (Pilih Semua) -->
             <div class="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between mb-4 shadow-sm">
                 <div class="flex items-center gap-3">
-                    <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-brand focus:ring-brand cursor-pointer" checked>
+                    <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-brand focus:ring-brand cursor-pointer select-all" checked>
                     <span class="text-base font-bold text-gray-900">Pilih Semua <span class="font-normal text-gray-500">({{ $cartItems->count() }})</span></span>
                 </div>
                 <button class="text-base font-bold text-brand hover:text-brand-hover">Hapus</button>
@@ -57,20 +57,20 @@
                     }
                 @endphp
                 @if($listing)
-                <div class="p-4 border-b border-gray-100 last:border-0">
+                <div class="p-4 border-b border-gray-100 last:border-0 store-block">
                     <!-- Store name header -->
                     <div class="flex items-center gap-3 mb-4">
-                        <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-brand focus:ring-brand cursor-pointer" checked>
+                        <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-brand focus:ring-brand cursor-pointer store-checkbox" checked>
                         <div class="flex items-center gap-1.5">
-                            <i data-lucide="badge-check" class="w-4 h-4 text-purple-600 fill-purple-100"></i>
-                            <span class="text-base font-bold text-gray-900">{{ $listing->seller->name ?? 'Toko' }}</span>
+                            <i data-lucide="store" class="w-4 h-4 text-gray-500"></i>
+                            <span class="text-base font-bold text-gray-900">{{ $listing->seller->sellerProfile->business_name ?? $listing->seller->name ?? 'Toko' }}</span>
                         </div>
                     </div>
                     
                     <!-- Product body -->
                     <div class="flex items-start gap-4">
                         <div class="pt-6 shrink-0">
-                            <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-brand focus:ring-brand cursor-pointer" checked>
+                            <input type="checkbox" class="w-5 h-5 rounded border-gray-300 text-brand focus:ring-brand cursor-pointer item-checkbox" value="{{ $listing->id }}" data-price="{{ $listing->price_per_unit }}" data-qty="{{ $qty }}" checked>
                         </div>
                         
                         <a href="{{ route('marketplace.show', $listing->id) }}" class="w-20 h-20 shrink-0 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 block">
@@ -91,12 +91,27 @@
                             
                             <div class="flex justify-end items-center gap-5 mt-4">
                                 <!-- Favorite icon -->
-                                <button class="text-gray-400 hover:text-rose-500 transition-colors">
-                                    <i data-lucide="heart" class="w-5 h-5"></i>
-                                </button>
+                                @php
+                                    $isFav = auth()->user()->favoriteListings()->where('listing_id', $listing->id)->exists();
+                                @endphp
+                                @if($isFav)
+                                <form method="POST" action="{{ route('buyer.favorites.destroy', $listing->id) }}" class="m-0 relative top-0.5">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-rose-500 hover:text-rose-600 transition-colors mt-1" title="Hapus dari Favorit">
+                                        <i data-lucide="heart" class="w-5 h-5 fill-rose-500"></i>
+                                    </button>
+                                </form>
+                                @else
+                                <form method="POST" action="{{ route('buyer.favorites.store', $listing->id) }}" class="m-0 relative top-0.5">
+                                    @csrf
+                                    <button type="submit" class="text-gray-400 hover:text-rose-500 transition-colors mt-1" title="Simpan ke Favorit">
+                                        <i data-lucide="heart" class="w-5 h-5"></i>
+                                    </button>
+                                </form>
+                                @endif
                                 
                                 <!-- Delete from cart -->
-                                <form method="POST" action="{{ route('buyer.cart.destroy', $listing->id) }}" class="m-0">
+                                <form method="POST" action="{{ route('buyer.cart.destroy', $listing->id) }}" class="m-0 relative top-0.5">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center mt-1" title="Hapus dari keranjang">
@@ -105,15 +120,18 @@
                                 </form>
                                 
                                 <!-- Quantity Control -->
-                                <div class="flex items-center border border-gray-300 rounded-full px-2 py-1 ml-1 h-9">
-                                    <button class="text-gray-400 hover:text-brand w-6 h-6 flex items-center justify-center cursor-pointer">
-                                        <i data-lucide="minus" class="w-4 h-4"></i>
-                                    </button>
-                                    <span class="text-sm font-semibold text-gray-700 w-8 text-center">{{ $qty }}</span>
-                                    <button class="text-gray-400 hover:text-brand w-6 h-6 flex items-center justify-center cursor-pointer">
-                                        <i data-lucide="plus" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
+                                <form method="POST" action="{{ route('cart.update', $listing->id) }}" class="flex items-center m-0">
+                                    @csrf @method('PUT')
+                                    <div class="flex items-center border border-gray-300 rounded-full px-2 py-1 ml-1 h-9">
+                                        <button type="submit" name="quantity" value="{{ max(1, $qty - 1) }}" class="text-gray-400 hover:text-brand w-6 h-6 flex items-center justify-center cursor-pointer" {{ $qty <= 1 ? 'disabled' : '' }}>
+                                            <i data-lucide="minus" class="w-4 h-4"></i>
+                                        </button>
+                                        <span class="text-sm font-semibold text-gray-700 w-8 text-center">{{ $qty }}</span>
+                                        <button type="submit" name="quantity" value="{{ $qty + 1 }}" class="text-gray-400 hover:text-brand w-6 h-6 flex items-center justify-center cursor-pointer">
+                                            <i data-lucide="plus" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -135,12 +153,12 @@
                 
                 <div class="flex items-center justify-between mb-6">
                     <span class="text-gray-600 text-sm">Total</span>
-                    <span class="text-lg font-bold text-gray-900">Rp{{ number_format($totalPrice ?? 0, 0, ',', '.') }}</span>
+                    <span class="text-lg font-bold text-gray-900" id="total-price">Rp{{ number_format($totalPrice ?? 0, 0, ',', '.') }}</span>
                 </div>
                 
-                <form action="{{ route('buyer.cart.checkout') }}" method="POST">
+                <form action="{{ route('cart.checkout') }}" method="POST" id="checkout-form">
                     @csrf
-                    <button type="submit" class="w-full py-3 bg-brand text-white font-bold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
+                    <button type="submit" id="total-qty" class="w-full py-3 bg-brand text-white font-bold rounded-xl hover:bg-brand-hover transition-colors shadow-sm">
                         Beli ({{ $totalQty ?? 0 }})
                     </button>
                 </form>
@@ -150,4 +168,95 @@
     </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckboxes = document.querySelectorAll('.select-all');
+    const storeCheckboxes = document.querySelectorAll('.store-checkbox');
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const totalPriceEl = document.getElementById('total-price');
+    const totalQtyEl = document.getElementById('total-qty');
+    const checkoutForm = document.getElementById('checkout-form');
+
+    function calculateTotal() {
+        let total = 0;
+        let qty = 0;
+        itemCheckboxes.forEach(cb => {
+            if (cb.checked) {
+                total += (parseInt(cb.dataset.price) * parseInt(cb.dataset.qty));
+                qty += parseInt(cb.dataset.qty);
+            }
+        });
+        if(totalPriceEl) totalPriceEl.textContent = 'Rp' + total.toLocaleString('id-ID').replace(/,/g, '.');
+        if(totalQtyEl) totalQtyEl.textContent = 'Beli (' + qty + ')';
+    }
+
+    selectAllCheckboxes.forEach(selectAll => {
+        selectAll.addEventListener('change', function() {
+            const isChecked = this.checked;
+            itemCheckboxes.forEach(cb => cb.checked = isChecked);
+            storeCheckboxes.forEach(cb => cb.checked = isChecked);
+            calculateTotal();
+        });
+    });
+
+    storeCheckboxes.forEach(storeCb => {
+        storeCb.addEventListener('change', function() {
+            const isChecked = this.checked;
+            const storeBlock = this.closest('.store-block');
+            if(storeBlock) {
+                storeBlock.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = isChecked);
+            }
+            calculateTotal();
+            
+            if (!isChecked) {
+                selectAllCheckboxes.forEach(cb => cb.checked = false);
+            }
+        });
+    });
+
+    itemCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            calculateTotal();
+            if (!this.checked) {
+                selectAllCheckboxes.forEach(cb => cb.checked = false);
+                const storeBlock = this.closest('.store-block');
+                if (storeBlock) {
+                    const storeCb = storeBlock.querySelector('.store-checkbox');
+                    if(storeCb) storeCb.checked = false;
+                }
+            }
+        });
+    });
+    
+    // Initial calc
+    calculateTotal();
+
+    // Checkout form sync
+    if(checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            checkoutForm.querySelectorAll('input[name="selected_items[]"]').forEach(i => i.remove());
+            
+            let hasSelection = false;
+            itemCheckboxes.forEach(cb => {
+                if(cb.checked) {
+                    hasSelection = true;
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'selected_items[]';
+                    input.value = cb.value;
+                    checkoutForm.appendChild(input);
+                }
+            });
+            
+            if(!hasSelection) {
+                e.preventDefault();
+                alert('Pilih setidaknya satu barang untuk dibeli');
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection
