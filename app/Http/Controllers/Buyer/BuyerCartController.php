@@ -59,6 +59,19 @@ class BuyerCartController extends Controller implements HasMiddleware
         
         return redirect()->back()->with('success', 'Barang berhasil dimasukkan ke keranjang.');
     }
+
+    public function update(Request $request, \App\Models\WasteListing $wasteListing)
+    {
+        $cart = session()->get('cart', []);
+        $quantity = max(1, (int) $request->input('quantity', 1));
+        
+        if (isset($cart[$wasteListing->id])) {
+            $cart[$wasteListing->id]['quantity'] = $quantity;
+            session()->put('cart', $cart);
+        }
+        
+        return redirect()->back();
+    }
     
     public function destroy(\App\Models\WasteListing $wasteListing)
     {
@@ -71,36 +84,46 @@ class BuyerCartController extends Controller implements HasMiddleware
         return redirect()->back()->with('success', 'Barang berhasil dihapus dari keranjang.');
     }
 
-    public function checkout()
+    public function checkout(Request $request)
     {
         $cartData = session()->get('cart', []);
+        $selectedIds = $request->input('selected_items', []);
+        
         if (empty($cartData)) {
             return redirect()->back()->with('error', 'Keranjang belanja Anda kosong.');
+        }
+        
+        if (empty($selectedIds)) {
+            return redirect()->back()->with('error', 'Pilih setidaknya satu barang untuk dibeli.');
         }
 
         $orderService = app(\App\Services\OrderService::class);
         $orders = [];
 
-        foreach ($cartData as $listingId => $item) {
+        foreach ($selectedIds as $listingId) {
+            if (!isset($cartData[$listingId])) continue;
+            
+            $item = $cartData[$listingId];
             $listing = \App\Models\WasteListing::find($listingId);
             if ($listing) {
                 try {
                     $order = $orderService->createOrder(auth()->user(), $listing, [
                         'quantity' => $item['quantity'],
-                        // Defaults as cart doesn't have shipping address UI yet
                         'pickup_method' => 'self_pickup', 
                         'pickup_date' => now()->addDays(1)->format('Y-m-d'),
                         'pickup_time' => '10:00',
                     ]);
                     $orders[] = $order;
+                    // Remove processed item from cart
+                    unset($cartData[$listingId]);
                 } catch (\Exception $e) {
                     // Skip or log error if listing is unavailable
                 }
             }
         }
 
-        // Clear cart
-        session()->forget('cart');
+        // Update cart with remaining items
+        session()->put('cart', $cartData);
 
         if (count($orders) === 1) {
             return redirect()->route('buyer.orders.payment.create', $orders[0]->id)->with('success', 'Pesanan berhasil dibuat! Silakan lanjutkan pembayaran.');

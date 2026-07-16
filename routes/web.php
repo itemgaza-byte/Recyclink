@@ -265,6 +265,7 @@ Route::group([
         Route::get('/cart', [BuyerCartController::class, 'index'])->name('cart.index');
         Route::post('/cart/checkout', [BuyerCartController::class, 'checkout'])->name('cart.checkout');
         Route::post('/cart/{wasteListing}', [BuyerCartController::class, 'store'])->name('cart.store');
+        Route::put('/cart/{wasteListing}', [BuyerCartController::class, 'update'])->name('cart.update');
         Route::delete('/cart/{wasteListing}', [BuyerCartController::class, 'destroy'])->name('cart.destroy');
     });
 });
