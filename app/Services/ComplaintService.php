@@ -15,15 +15,18 @@ class ComplaintService
     protected NotificationService $notificationService;
     protected ActivityLogService $activityLogService;
     protected FileUploadService $fileUploadService;
+    protected WalletService $walletService;
 
     public function __construct(
         NotificationService $notificationService,
         ActivityLogService $activityLogService,
-        FileUploadService $fileUploadService
+        FileUploadService $fileUploadService,
+        WalletService $walletService
     ) {
         $this->notificationService = $notificationService;
         $this->activityLogService = $activityLogService;
         $this->fileUploadService = $fileUploadService;
+        $this->walletService = $walletService;
     }
 
     // ponytail: create complaint for an order (allowed within 7 days of order creation/completion)
@@ -129,6 +132,16 @@ class ComplaintService
                 'admin_id' => $admin->id,
             ]);
 
+            // Cancel the order since the buyer wins and funds should be refunded
+            $order = $complaint->order;
+            if ($order && $order->order_status !== Order::STATUS_CANCELLED) {
+                $order->update([
+                    'order_status' => Order::STATUS_CANCELLED,
+                    'cancelled_at' => now(),
+                    'cancellation_reason' => 'Dibatalkan oleh Admin (Komplain Pembeli Disetujui)'
+                ]);
+            }
+
             // Log activity
             $this->activityLogService->log(
                 'complaint.resolve',
@@ -163,6 +176,23 @@ class ComplaintService
                 'resolved_at' => now(),
                 'admin_id' => $admin->id,
             ]);
+
+            // Complete the order since the seller wins
+            $order = $complaint->order;
+            if ($order && $order->order_status !== Order::STATUS_COMPLETED) {
+                $order->update(['order_status' => Order::STATUS_COMPLETED]);
+                
+                // Credit seller wallet using WalletService (Only if not COD)
+                $paymentMethod = $order->payment ? $order->payment->payment_method : null;
+                if ($paymentMethod !== 'cash_on_delivery') {
+                    $this->walletService->addEarnings(
+                        $order->seller,
+                        (float) ($order->subtotal + $order->shipping_cost),
+                        $order,
+                        "Earning from order {$order->order_code} after complaint rejected."
+                    );
+                }
+            }
 
             // Log activity
             $this->activityLogService->log(
