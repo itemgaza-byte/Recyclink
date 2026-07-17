@@ -27,6 +27,12 @@
                     @endif
                 </div>
 
+                <div class="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <h4 class="font-bold text-blue-800 text-xs mb-1">Informasi Banding (Jika Diperlukan)</h4>
+                    <p class="text-[11px] text-blue-700 mb-1">Jika admin memenangkan pembeli, Anda berhak mengajukan banding (maks 7 hari kerja sejak keputusan).</p>
+                    <p class="text-[11px] text-blue-700"><strong>Siapkan Bukti:</strong> Video proses pengemasan paket, Resi, atau foto kondisi limbah sebelum dikirim.</p>
+                </div>
+
                 <div class="space-y-4">
                     <div>
                         <p class="text-sm text-gray-500">Nomor Komplain</p>
