@@ -28,6 +28,21 @@
         </div>
     </div>
 
+    {{-- Validation Errors --}}
+    @if ($errors->any())
+        <div class="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3">
+            <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 mt-0.5 shrink-0"></i>
+            <div>
+                <p class="text-sm font-bold text-red-800">Terdapat kesalahan input:</p>
+                <ul class="mt-1 list-disc list-inside text-sm text-red-700">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+
     {{-- Main Grid --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
