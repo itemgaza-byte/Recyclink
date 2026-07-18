@@ -77,7 +77,7 @@ class AdminComplaintController extends Controller implements HasMiddleware
         }
     }
 
-    public function acceptAppeal(\Illuminate\Http\Request $request, Complaint $complaint)
+    public function acceptAppeal(\Illuminate\Http\Request $request, Complaint $complaint, \App\Services\WalletService $walletService)
     {
         $this->authorize('process', $complaint);
         
@@ -86,7 +86,22 @@ class AdminComplaintController extends Controller implements HasMiddleware
             'resolution_note' => $complaint->resolution_note . "\n\n[BANDING DITERIMA] " . $request->input('appeal_resolution_note'),
         ]);
 
-        // We would also update wallet logic here in a real scenario to forward funds to seller.
+        $order = $complaint->order;
+        if ($order && $order->order_status !== \App\Models\Order::STATUS_COMPLETED) {
+            $order->update(['order_status' => \App\Models\Order::STATUS_COMPLETED]);
+            
+            // Credit seller wallet
+            $paymentMethod = $order->payment ? $order->payment->payment_method : null;
+            if ($paymentMethod !== 'cash_on_delivery') {
+                $walletService->addEarnings(
+                    $order->seller,
+                    (float) ($order->subtotal + $order->shipping_cost),
+                    $order,
+                    "Earning from order {$order->order_code} after appeal accepted."
+                );
+            }
+        }
+
         return redirect()->back()->with('success', 'Banding diterima, dana diteruskan ke penjual.');
     }
 
