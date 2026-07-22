@@ -36,7 +36,10 @@ class RegisterController extends Controller implements HasMiddleware
     {
         try {
             $user = $this->authService->register($request->validated());
-            return $this->redirectUser($user)->with('success', 'Pendaftaran berhasil!');
+            $msg = $user->isBuyer() 
+                ? 'Registrasi berhasil! Akun pembeli Anda langsung aktif.' 
+                : 'Registrasi berhasil! Akun penjual Anda sedang menunggu verifikasi admin.';
+            return $this->redirectUser($user)->with('success', $msg);
         } catch (RecyclinkException $e) {
             return redirect()->back()->withInput()->with('error', $e->getMessage());
         }

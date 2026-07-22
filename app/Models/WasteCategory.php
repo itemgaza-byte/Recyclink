@@ -34,7 +34,11 @@ class WasteCategory extends Model
 
     public static function getActiveCached()
     {
-        return Cache::remember('waste_categories', 3600, fn() => static::active()->orderBy('sort_order')->get());
+        // ponytail: store as plain array to prevent Eloquent Collection deserialization issues, hydrate to models on retrieve
+        $data = Cache::remember('waste_categories', 3600, fn() =>
+            static::active()->orderBy('sort_order')->get(['id', 'category_name', 'slug', 'icon', 'color'])->toArray()
+        );
+        return static::hydrate($data);
     }
 
     public function scopeActive($query)        { return $query->where('is_active', true); }

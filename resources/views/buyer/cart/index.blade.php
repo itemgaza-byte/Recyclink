@@ -120,7 +120,7 @@
                                 </form>
                                 
                                 <!-- Quantity Control -->
-                                <form method="POST" action="{{ route('cart.update', $listing->id) }}" class="flex items-center m-0">
+                                <form method="POST" action="{{ route('buyer.cart.update', $listing->id) }}" class="flex items-center m-0">
                                     @csrf @method('PUT')
                                     <div class="flex items-center border border-gray-300 rounded-full px-2 py-1 ml-1 h-9">
                                         <button type="submit" name="quantity" value="{{ max(1, $qty - 1) }}" class="text-gray-400 hover:text-brand w-6 h-6 flex items-center justify-center cursor-pointer" {{ $qty <= 1 ? 'disabled' : '' }}>
@@ -156,7 +156,7 @@
                     <span class="text-lg font-bold text-gray-900" id="total-price">Rp{{ number_format($totalPrice ?? 0, 0, ',', '.') }}</span>
                 </div>
                 
-                <form action="{{ route('cart.checkout') }}" method="POST" id="checkout-form">
+                <form action="{{ route('buyer.cart.checkout') }}" method="POST" id="checkout-form">
                     @csrf
                     
                     {{-- Metode --}}

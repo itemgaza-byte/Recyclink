@@ -28,12 +28,15 @@ class AuthService
             // Actually, if we set status to STATUS_ACTIVE, they can login immediately. Wait, if it's pending, they need admin approval.
             // Let's set status to ACTIVE since they filled everything. If admin still needs to verify, it should be PENDING. I'll set STATUS_ACTIVE for buyer and STATUS_PENDING for seller, or ACTIVE for both. The user said "verifikasi berhasil kl uda isi data2nya dari awal", which means they are considered verified/active instantly? Or just that the "verification form" is skipped? I'll just set it to STATUS_ACTIVE for Buyer, and STATUS_PENDING for Seller. But wait, "verifikasi berhasil" implies they skip the pending state. Let's make it STATUS_ACTIVE for now, or keep it PENDING if the system requires it. Let's set it to STATUS_ACTIVE for both so they don't get stuck.
             
+            // ponytail: buyer is active immediately; seller requires admin verification
+            $status = ($data['role'] === 'buyer') ? User::STATUS_ACTIVE : User::STATUS_PENDING;
+
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
                 'phone_number' => $data['phone_number'] ?? null,
-                'status' => User::STATUS_PENDING, // Require admin verification
+                'status' => $status,
             ]);
 
             $user->assignRole($data['role']);

@@ -10,13 +10,42 @@
             <p class="text-gray-600 mt-1">Kelola semua akun pengguna yang terdaftar di Recyclink.</p>
         </div>
         
-        <!-- Search & Filter Placeholder -->
-        <div class="flex items-center gap-3">
-            <div class="relative">
-                <i data-lucide="search" class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-                <input type="text" placeholder="Cari pengguna..." class="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand focus:border-brand outline-none text-sm w-full sm:w-64">
+        <!-- Active Search & Filter Form -->
+        <form action="{{ route('admin.users.index') }}" method="GET" class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div class="relative flex-1 sm:w-72">
+                <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, email, HP, usaha... (Enter)" class="pl-10 pr-9 py-2 bg-white border border-gray-200 text-gray-900 rounded-xl focus:ring-2 focus:ring-brand focus:border-brand outline-none text-xs sm:text-sm w-full transition-all">
+                @if(request('search'))
+                    <a href="{{ route('admin.users.index', request()->only(['role', 'status'])) }}" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </a>
+                @endif
             </div>
-        </div>
+
+            <!-- Role Filter -->
+            <select name="role" onchange="this.form.submit()" class="py-2 px-3 bg-white border border-gray-200 text-gray-700 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand focus:border-brand outline-none font-medium cursor-pointer transition-colors">
+                <option value="">Semua Peran</option>
+                <option value="buyer" {{ request('role') === 'buyer' ? 'selected' : '' }}>Pembeli</option>
+                <option value="seller" {{ request('role') === 'seller' ? 'selected' : '' }}>UMKM / Penjual</option>
+                <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+            </select>
+
+            <!-- Status Filter -->
+            <select name="status" onchange="this.form.submit()" class="py-2 px-3 bg-white border border-gray-200 text-gray-700 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand focus:border-brand outline-none font-medium cursor-pointer transition-colors">
+                <option value="">Semua Status</option>
+                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif</option>
+                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Menunggu</option>
+                <option value="suspended" {{ request('status') === 'suspended' ? 'selected' : '' }}>Ditangguhkan</option>
+                <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
+            </select>
+
+            @if(request()->hasAny(['search', 'role', 'status']))
+                <a href="{{ route('admin.users.index') }}" class="p-2 text-red-600 hover:bg-red-50 border border-red-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1" title="Reset Filter">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Reset</span>
+                </a>
+            @endif
+        </form>
     </div>
 
     
@@ -267,139 +296,141 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('userDetailModal');
-        const backdrop = document.getElementById('modalBackdrop');
-        const content = document.getElementById('modalContent');
-        const closeBtn = document.getElementById('closeModalBtn');
-        const profileSection = document.getElementById('modalProfileSection');
-        
+    (function() {
+        let isDelegated = false;
+
         function openModal() {
+            const modal = document.getElementById('userDetailModal');
+            const backdrop = document.getElementById('modalBackdrop');
+            const content = document.getElementById('modalContent');
+            if (!modal) return;
+
             modal.classList.remove('hidden');
             setTimeout(() => {
-                backdrop.classList.remove('opacity-0');
-                backdrop.classList.add('opacity-100');
-                content.classList.remove('scale-95', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
+                backdrop?.classList.remove('opacity-0');
+                backdrop?.classList.add('opacity-100');
+                content?.classList.remove('scale-95', 'opacity-0');
+                content?.classList.add('scale-100', 'opacity-100');
             }, 10);
         }
-        
+
         function closeModal() {
-            backdrop.classList.remove('opacity-100');
-            backdrop.classList.add('opacity-0');
-            content.classList.remove('scale-100', 'opacity-100');
-            content.classList.add('scale-95', 'opacity-0');
+            const modal = document.getElementById('userDetailModal');
+            const backdrop = document.getElementById('modalBackdrop');
+            const content = document.getElementById('modalContent');
+            if (!modal) return;
+
+            backdrop?.classList.remove('opacity-100');
+            backdrop?.classList.add('opacity-0');
+            content?.classList.remove('scale-100', 'opacity-100');
+            content?.classList.add('scale-95', 'opacity-0');
             setTimeout(() => {
                 modal.classList.add('hidden');
             }, 300);
         }
-        
-        closeBtn.addEventListener('click', closeModal);
-        backdrop.addEventListener('click', closeModal);
-        
-        document.querySelectorAll('.btn-view-user').forEach(button => {
-            button.addEventListener('click', function() {
-                const userId = this.dataset.userId;
-                
-                // Populate data
-                document.getElementById('modalUserName').textContent = this.dataset.name;
-                document.getElementById('modalUserEmail').textContent = this.dataset.email;
-                document.getElementById('modalUserPhone').textContent = this.dataset.phone;
-                document.getElementById('modalUserRole').textContent = this.dataset.role;
-                document.getElementById('modalUserJoined').textContent = this.dataset.joined;
-                document.getElementById('modalUserDetailLink').href = `/dashboard/admin/users/${userId}`;
-                
-                const reasonText = this.dataset.reason;
-                const reasonContainer = document.getElementById('modalReasonContainer');
-                const reasonEl = document.getElementById('modalUserReason');
-                if (reasonText && reasonText !== '-') {
-                    reasonEl.textContent = reasonText;
-                    reasonContainer.classList.remove('hidden');
-                } else {
-                    reasonContainer.classList.add('hidden');
-                }
-                
-                const statusSpan = document.getElementById('modalUserStatus');
-                statusSpan.textContent = this.dataset.status;
-                statusSpan.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium';
-                const rawStatus = this.dataset.rawStatus;
-                if (rawStatus === 'active') {
-                    statusSpan.classList.add('bg-emerald-100', 'text-emerald-700');
-                } else if (rawStatus === 'suspended') {
-                    statusSpan.classList.add('bg-red-100', 'text-red-700');
-                } else if (rawStatus === 'pending') {
-                    statusSpan.classList.add('bg-amber-100', 'text-amber-700');
-                } else {
-                    statusSpan.classList.add('bg-gray-100', 'text-gray-700');
-                }
-                
-                const type = this.dataset.profileType;
-                let html = '';
-                
-                if (type === 'buyer') {
-                    html = `
-                        <h4 class="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Profil Pembeli</h4>
-                        <div class="space-y-4">
-                            <div><p class="text-xs text-gray-500 mb-1">Nama Perusahaan</p><p class="text-sm font-medium text-gray-900">${this.dataset.company}</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Tipe Pembeli</p><p class="text-sm font-medium text-gray-900">${this.dataset.btype}</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Jenis Industri</p><p class="text-sm font-medium text-gray-900">${this.dataset.industry}</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Alamat Lengkap</p><p class="text-sm font-medium text-gray-900">${this.dataset.address}</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Kota / Provinsi</p><p class="text-sm font-medium text-gray-900">${this.dataset.city}, ${this.dataset.province}</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Kode Pos</p><p class="text-sm font-medium text-gray-900">${this.dataset.zip}</p></div>
-                        </div>
-                    `;
-                } else if (type === 'seller') {
-                    let verificationBadge = '';
-                    if (this.dataset.verificationStatus === 'pending') {
-                        verificationBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-amber-100 text-amber-800 whitespace-nowrap uppercase tracking-normal">Menunggu Verifikasi</span>';
-                    } else if (this.dataset.verificationStatus === 'verified') {
-                        verificationBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-800 whitespace-nowrap uppercase tracking-normal">Terverifikasi</span>';
-                    } else if (this.dataset.verificationStatus === 'rejected') {
-                        verificationBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-red-100 text-red-800 whitespace-nowrap uppercase tracking-normal">Ditolak</span>';
-                    }
-                    
-                    html = `
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Profil Penjual</h4>
-                            <div>${verificationBadge}</div>
-                        </div>
-                        <div class="space-y-4">
-                            <div><p class="text-xs text-gray-500 mb-1">Nama Usaha / Pengepul</p><p class="text-sm font-medium text-gray-900">${this.dataset.business}</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Tipe Usaha</p><p class="text-sm font-medium text-gray-900">${this.dataset.btype}</p></div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div><p class="text-xs text-gray-500 mb-1">NPWP</p><p class="text-sm font-medium text-gray-900">${this.dataset.npwp}</p></div>
-                                <div><p class="text-xs text-gray-500 mb-1">NIB</p><p class="text-sm font-medium text-gray-900">${this.dataset.nib}</p></div>
-                            </div>
-                            <div><p class="text-xs text-gray-500 mb-1">Alamat Lengkap</p><p class="text-sm font-medium text-gray-900">${this.dataset.address}</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Kota / Provinsi</p><p class="text-sm font-medium text-gray-900">${this.dataset.city}, ${this.dataset.province}</p></div>
-                            <div><p class="text-xs text-gray-500 mb-1">Kode Pos</p><p class="text-sm font-medium text-gray-900">${this.dataset.zip}</p></div>
-                            <div>
-                                <p class="text-xs text-gray-500 mb-1">Rekening Bank</p>
-                                <p class="text-sm font-medium text-gray-900">${this.dataset.bankName} - ${this.dataset.bankAcc} a.n ${this.dataset.bankHolder}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500 mb-1">Titik Lokasi (Maps)</p>
-                                <p class="text-sm font-medium text-gray-900">
-                                    ${this.dataset.lat !== '-' && this.dataset.lng !== '-' ? 
-                                        `<a href="https://www.google.com/maps/search/?api=1&query=${this.dataset.lat},${this.dataset.lng}" target="_blank" class="text-blue-600 hover:underline inline-flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> ${this.dataset.lat}, ${this.dataset.lng}</a>` 
-                                        : 'Belum diatur'
-                                    }
-                                </p>
-                            </div>
-                            ${this.dataset.desc !== '-' ? `<div><p class="text-xs text-gray-500 mb-1">Deskripsi</p><p class="text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-100">${this.dataset.desc}</p></div>` : ''}
-                        </div>
-                    `;
-                } else {
-                    html = `<div class="flex items-center justify-center h-full bg-gray-50 rounded-xl border border-dashed border-gray-200 p-8"><p class="text-sm text-gray-500 text-center">Tidak ada data profil spesifik.</p></div>`;
-                }
-                profileSection.innerHTML = html;
 
-                const actionContainer = document.getElementById('modalActionContainer');
+        function populateAndOpenModal(button) {
+            const userId = button.dataset.userId;
+            const profileSection = document.getElementById('modalProfileSection');
+            const actionContainer = document.getElementById('modalActionContainer');
+            if (!profileSection) return;
+
+            document.getElementById('modalUserName').textContent = button.dataset.name || '-';
+            document.getElementById('modalUserEmail').textContent = button.dataset.email || '-';
+            document.getElementById('modalUserPhone').textContent = button.dataset.phone || '-';
+            document.getElementById('modalUserRole').textContent = button.dataset.role || '-';
+            document.getElementById('modalUserJoined').textContent = button.dataset.joined || '-';
+            document.getElementById('modalUserDetailLink').href = `/dashboard/admin/users/${userId}`;
+
+            const reasonText = button.dataset.reason;
+            const reasonContainer = document.getElementById('modalReasonContainer');
+            const reasonEl = document.getElementById('modalUserReason');
+            if (reasonText && reasonText !== '-') {
+                if (reasonEl) reasonEl.textContent = reasonText;
+                reasonContainer?.classList.remove('hidden');
+            } else {
+                reasonContainer?.classList.add('hidden');
+            }
+
+            const statusSpan = document.getElementById('modalUserStatus');
+            if (statusSpan) {
+                statusSpan.textContent = button.dataset.status || 'Status';
+                statusSpan.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium';
+                const rawStatus = button.dataset.rawStatus;
+                if (rawStatus === 'active') statusSpan.classList.add('bg-emerald-100', 'text-emerald-700');
+                else if (rawStatus === 'suspended') statusSpan.classList.add('bg-red-100', 'text-red-700');
+                else if (rawStatus === 'pending') statusSpan.classList.add('bg-amber-100', 'text-amber-700');
+                else statusSpan.classList.add('bg-gray-100', 'text-gray-700');
+            }
+
+            const type = button.dataset.profileType;
+            let html = '';
+
+            if (type === 'buyer') {
+                html = `
+                    <h4 class="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Profil Pembeli</h4>
+                    <div class="space-y-4">
+                        <div><p class="text-xs text-gray-500 mb-1">Nama Perusahaan</p><p class="text-sm font-medium text-gray-900">${button.dataset.company || '-'}</p></div>
+                        <div><p class="text-xs text-gray-500 mb-1">Tipe Pembeli</p><p class="text-sm font-medium text-gray-900">${button.dataset.btype || '-'}</p></div>
+                        <div><p class="text-xs text-gray-500 mb-1">Jenis Industri</p><p class="text-sm font-medium text-gray-900">${button.dataset.industry || '-'}</p></div>
+                        <div><p class="text-xs text-gray-500 mb-1">Alamat Lengkap</p><p class="text-sm font-medium text-gray-900">${button.dataset.address || '-'}</p></div>
+                        <div><p class="text-xs text-gray-500 mb-1">Kota / Provinsi</p><p class="text-sm font-medium text-gray-900">${button.dataset.city || '-'}, ${button.dataset.province || '-'}</p></div>
+                        <div><p class="text-xs text-gray-500 mb-1">Kode Pos</p><p class="text-sm font-medium text-gray-900">${button.dataset.zip || '-'}</p></div>
+                    </div>
+                `;
+            } else if (type === 'seller') {
+                let verificationBadge = '';
+                if (button.dataset.verificationStatus === 'pending') {
+                    verificationBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-amber-100 text-amber-800 uppercase">Menunggu Verifikasi</span>';
+                } else if (button.dataset.verificationStatus === 'verified') {
+                    verificationBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-800 uppercase">Terverifikasi</span>';
+                } else if (button.dataset.verificationStatus === 'rejected') {
+                    verificationBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-red-100 text-red-800 uppercase">Ditolak</span>';
+                }
+
+                html = `
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Profil Penjual</h4>
+                        <div>${verificationBadge}</div>
+                    </div>
+                    <div class="space-y-4">
+                        <div><p class="text-xs text-gray-500 mb-1">Nama Usaha / Pengepul</p><p class="text-sm font-medium text-gray-900">${button.dataset.business || '-'}</p></div>
+                        <div><p class="text-xs text-gray-500 mb-1">Tipe Usaha</p><p class="text-sm font-medium text-gray-900">${button.dataset.btype || '-'}</p></div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><p class="text-xs text-gray-500 mb-1">NPWP</p><p class="text-sm font-medium text-gray-900">${button.dataset.npwp || '-'}</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">NIB</p><p class="text-sm font-medium text-gray-900">${button.dataset.nib || '-'}</p></div>
+                        </div>
+                        <div><p class="text-xs text-gray-500 mb-1">Alamat Lengkap</p><p class="text-sm font-medium text-gray-900">${button.dataset.address || '-'}</p></div>
+                        <div><p class="text-xs text-gray-500 mb-1">Kota / Provinsi</p><p class="text-sm font-medium text-gray-900">${button.dataset.city || '-'}, ${button.dataset.province || '-'}</p></div>
+                        <div><p class="text-xs text-gray-500 mb-1">Kode Pos</p><p class="text-sm font-medium text-gray-900">${button.dataset.zip || '-'}</p></div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Rekening Bank</p>
+                            <p class="text-sm font-medium text-gray-900">${button.dataset.bankName || '-'} - ${button.dataset.bankAcc || '-'} a.n ${button.dataset.bankHolder || '-'}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Titik Lokasi (Maps)</p>
+                            <p class="text-sm font-medium text-gray-900">
+                                ${button.dataset.lat && button.dataset.lat !== '-' ? 
+                                    `<a href="https://www.google.com/maps/search/?api=1&query=${button.dataset.lat},${button.dataset.lng}" target="_blank" class="text-blue-600 hover:underline inline-flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> ${button.dataset.lat}, ${button.dataset.lng}</a>` 
+                                    : 'Belum diatur'
+                                }
+                            </p>
+                        </div>
+                        ${button.dataset.desc && button.dataset.desc !== '-' ? `<div><p class="text-xs text-gray-500 mb-1">Deskripsi</p><p class="text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-100">${button.dataset.desc}</p></div>` : ''}
+                    </div>
+                `;
+            } else {
+                html = `<div class="flex items-center justify-center h-full bg-gray-50 rounded-xl border border-dashed border-gray-200 p-8"><p class="text-sm text-gray-500 text-center">Tidak ada data profil spesifik.</p></div>`;
+            }
+            profileSection.innerHTML = html;
+
+            if (actionContainer) {
                 actionContainer.innerHTML = '';
-                
                 let showAction = false;
-                if (this.dataset.canUpdateStatus === 'true') {
-                    const verificationStatus = this.dataset.verificationStatus;
+                const rawStatus = button.dataset.rawStatus;
+
+                if (button.dataset.canUpdateStatus === 'true') {
+                    const verificationStatus = button.dataset.verificationStatus;
 
                     if (rawStatus === 'pending') {
                         actionContainer.innerHTML = `
@@ -480,176 +511,138 @@
                         showAction = true;
                     }
                 }
-                
-                if (showAction) {
-                    actionContainer.classList.remove('hidden');
-                    
-                    // Bind SweetAlert handlers inside action container
-                    setTimeout(() => {
-                        const rejectBtn = actionContainer.querySelector('.btn-reject-user');
-                        if (rejectBtn) {
-                            rejectBtn.addEventListener('click', function() {
-                                const form = this.closest('form');
-                                Swal.fire({
-                                    title: 'Tolak Pendaftaran?',
-                                    text: 'Apakah Anda yakin ingin menolak pendaftaran pengguna ini?',
-                                    icon: 'warning',
-                                    input: 'textarea',
-                                    inputLabel: 'Alasan Penolakan',
-                                    inputPlaceholder: 'Tulis alasan penolakan di sini...',
-                                    showCancelButton: true,
-                                    confirmButtonColor: '#ef4444',
-                                    cancelButtonColor: '#6b7280',
-                                    confirmButtonText: 'Tolak',
-                                    cancelButtonText: 'Batal',
-                                    customClass: {
-                                        popup: 'rounded-2xl shadow-xl',
-                                        confirmButton: 'rounded-xl',
-                                        cancelButton: 'rounded-xl',
-                                        input: 'rounded-xl p-3 border-gray-300 focus:border-brand focus:ring-brand/20'
-                                    },
-                                    preConfirm: (reason) => {
-                                        if (!reason) {
-                                            Swal.showValidationMessage('Alasan penolakan harus diisi')
-                                        }
-                                        return reason;
-                                    }
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        form.querySelector('.rejection-reason-input').value = result.value;
-                                        form.submit();
-                                    }
-                                });
-                            });
-                        }
-                        
-                        const suspendBtn = actionContainer.querySelector('.btn-suspend-user');
-                        if (suspendBtn) {
-                            suspendBtn.addEventListener('click', function() {
-                                const form = this.closest('form');
-                                Swal.fire({
-                                    title: 'Tangguhkan Akun?',
-                                    text: 'Apakah Anda yakin ingin menangguhkan akun pengguna ini?',
-                                    icon: 'warning',
-                                    input: 'textarea',
-                                    inputLabel: 'Alasan Penangguhan',
-                                    showCancelButton: true,
-                                    confirmButtonColor: '#ef4444',
-                                    cancelButtonColor: '#6b7280',
-                                    confirmButtonText: 'Tangguhkan',
-                                    cancelButtonText: 'Batal',
-                                    customClass: {
-                                        popup: 'rounded-2xl shadow-xl',
-                                        confirmButton: 'rounded-xl',
-                                        cancelButton: 'rounded-xl'
-                                    }
-                                }).then((result) => {
-                                    if (result.isConfirmed) {
-                                        form.querySelector('.suspension-reason-input').value = result.value || 'Melanggar ketentuan layanan';
-                                        form.submit();
-                                    }
-                                });
-                            });
-                        }
-                    }, 50);
-                } else {
-                    actionContainer.classList.add('hidden');
-                }
-                
-                // Re-initialize lucide icons for the new content in modal
-                if (window.lucide) {
-                    lucide.createIcons();
-                }
-                
-                openModal();
-            });
-        });
 
-        document.querySelectorAll('.btn-reject-user').forEach(button => {
-            button.addEventListener('click', function() {
-                const form = this.closest('form');
-                const reasonInput = form.querySelector('.rejection-reason-input');
-                
-                Swal.fire({
-                    title: 'Tolak Pendaftaran?',
-                    text: 'Apakah Anda yakin ingin menolak pendaftaran pengguna ini?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    showCloseButton: true,
-                    scrollbarPadding: false,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Tolak',
-                    cancelButtonText: 'Batal',
-                    customClass: {
-                        popup: 'rounded-2xl shadow-xl',
-                        confirmButton: 'rounded-xl',
-                        cancelButton: 'rounded-xl'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                actionContainer.classList.toggle('hidden', !showAction);
+            }
+
+            if (window.lucide) lucide.createIcons();
+            openModal();
+        }
+
+        function setupGlobalDelegation() {
+            if (isDelegated) return;
+            isDelegated = true;
+
+            document.addEventListener('click', function(e) {
+                // 1. View User Button
+                const viewBtn = e.target.closest('.btn-view-user');
+                if (viewBtn) {
+                    e.preventDefault();
+                    populateAndOpenModal(viewBtn);
+                    return;
+                }
+
+                // 2. Close Modal Triggers
+                if (e.target.closest('#closeModalBtn') || e.target.id === 'modalBackdrop') {
+                    e.preventDefault();
+                    closeModal();
+                    return;
+                }
+
+                // 3. Delete User Button
+                const deleteBtn = e.target.closest('.btn-delete-user');
+                if (deleteBtn) {
+                    e.preventDefault();
+                    const form = deleteBtn.closest('form');
+                    if (window.Swal) {
+                        Swal.fire({
+                            title: 'Hapus Pengguna?',
+                            text: "Apakah Anda yakin ingin menghapus permanen pengguna ini? Aksi ini tidak dapat dibatalkan.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Ya, Hapus!',
+                            cancelButtonText: 'Batal',
+                            customClass: { popup: 'rounded-2xl shadow-xl', confirmButton: 'rounded-xl', cancelButton: 'rounded-xl' }
+                        }).then((result) => {
+                            if (result.isConfirmed) form.submit();
+                        });
+                    } else if (confirm("Apakah Anda yakin ingin menghapus permanen pengguna ini?")) {
                         form.submit();
                     }
-                });
-            });
-        });
-        
-        document.querySelectorAll('.btn-suspend-user').forEach(button => {
-            button.addEventListener('click', function() {
-                const form = this.closest('form');
-                const reasonInput = form.querySelector('.suspension-reason-input');
-                
-                Swal.fire({
-                    title: 'Tangguhkan Akun?',
-                    text: 'Apakah Anda yakin ingin menangguhkan akun pengguna ini?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    showCloseButton: true,
-                    scrollbarPadding: false,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Tangguhkan',
-                    cancelButtonText: 'Batal',
-                    customClass: {
-                        popup: 'rounded-2xl shadow-xl',
-                        confirmButton: 'rounded-xl',
-                        cancelButton: 'rounded-xl'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                    return;
+                }
+
+                // 4. Reject User Button in Modal
+                const rejectBtn = e.target.closest('.btn-reject-user');
+                if (rejectBtn) {
+                    e.preventDefault();
+                    const form = rejectBtn.closest('form');
+                    if (window.Swal) {
+                        Swal.fire({
+                            title: 'Tolak Pendaftaran?',
+                            text: 'Apakah Anda yakin ingin menolak pendaftaran pengguna ini?',
+                            icon: 'warning',
+                            input: 'textarea',
+                            inputLabel: 'Alasan Penolakan',
+                            inputPlaceholder: 'Tulis alasan penolakan di sini...',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Tolak',
+                            cancelButtonText: 'Batal',
+                            customClass: { popup: 'rounded-2xl shadow-xl', confirmButton: 'rounded-xl', cancelButton: 'rounded-xl' },
+                            preConfirm: (reason) => {
+                                if (!reason) Swal.showValidationMessage('Alasan penolakan harus diisi');
+                                return reason;
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.querySelector('.rejection-reason-input').value = result.value;
+                                form.submit();
+                            }
+                        });
+                    } else {
                         form.submit();
                     }
-                });
-            });
-        });
-        
-        document.querySelectorAll('.btn-delete-user').forEach(button => {
-            button.addEventListener('click', function() {
-                const form = this.closest('form');
-                Swal.fire({
-                    title: 'Hapus Pengguna?',
-                    text: "Apakah Anda yakin ingin menghapus permanen pengguna ini? Aksi ini tidak dapat dibatalkan.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    showCloseButton: true,
-                    scrollbarPadding: false,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Ya, Hapus!',
-                    cancelButtonText: 'Batal',
-                    customClass: {
-                        popup: 'rounded-2xl shadow-xl',
-                        confirmButton: 'rounded-xl',
-                        cancelButton: 'rounded-xl'
-                    },
-                    heightAuto: false
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                    return;
+                }
+
+                // 5. Suspend User Button in Modal
+                const suspendBtn = e.target.closest('.btn-suspend-user');
+                if (suspendBtn) {
+                    e.preventDefault();
+                    const form = suspendBtn.closest('form');
+                    if (window.Swal) {
+                        Swal.fire({
+                            title: 'Tangguhkan Akun?',
+                            text: 'Apakah Anda yakin ingin menangguhkan akun pengguna ini?',
+                            icon: 'warning',
+                            input: 'textarea',
+                            inputLabel: 'Alasan Penangguhan',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Tangguhkan',
+                            cancelButtonText: 'Batal',
+                            customClass: { popup: 'rounded-2xl shadow-xl', confirmButton: 'rounded-xl', cancelButton: 'rounded-xl' }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.querySelector('.suspension-reason-input').value = result.value || 'Melanggar ketentuan layanan';
+                                form.submit();
+                            }
+                        });
+                    } else {
                         form.submit();
                     }
-                });
+                    return;
+                }
             });
-        });
-    });
+        }
+
+        // Initialize icons and setup listener on Turbo load & DOM ready
+        function initPage() {
+            if (window.lucide) lucide.createIcons();
+            setupGlobalDelegation();
+        }
+
+        document.addEventListener('turbo:load', initPage);
+        if (document.readyState !== 'loading') {
+            initPage();
+        } else {
+            document.addEventListener('DOMContentLoaded', initPage);
+        }
+    })();
 </script>
 @endpush

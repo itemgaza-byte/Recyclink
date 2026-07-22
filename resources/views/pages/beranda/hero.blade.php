@@ -27,49 +27,6 @@
                 <p class="mt-5 text-lg text-gray-500 leading-relaxed max-w-lg">
                     Platform digital yang menghubungkan limbah UMKM dengan pihak yang membutuhkannya sebagai bahan baku ekonomis. Promosikan limbahmu, temukan pembeli, dan berkontribusi nyata untuk lingkungan.
                 </p>
-
-                {{-- Search Bar --}}
-                <div class="mt-8 flex items-center bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-brand/30 focus-within:border-brand transition-all">
-                    <div class="flex items-center pl-4 text-gray-400">
-                        <i data-lucide="search" class="w-5 h-5"></i>
-                    </div>
-                    <input
-                        id="hero-search"
-                        type="text"
-                        placeholder="Cari jenis limbah... (plastik, kertas, logam)"
-                        class="flex-1 px-3 py-4 text-sm text-gray-700 placeholder-gray-400 bg-transparent outline-none"
-                    >
-                    <button class="m-2 bg-brand hover:bg-brand-hover text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
-                        Cari
-                    </button>
-                </div>
-
-                {{-- Quick tags --}}
-                <div class="mt-4 flex flex-wrap gap-2">
-                    @foreach(['Plastik', 'Kertas', 'Logam', 'Elektronik', 'Kaca'] as $tag)
-                        <button class="text-xs text-gray-500 bg-gray-50 hover:bg-brand/10 hover:text-brand border border-gray-200 hover:border-brand/30 px-3 py-1 rounded-full transition-all">
-                            {{ $tag }}
-                        </button>
-                    @endforeach
-                </div>
-
-                {{-- Stats --}}
-                <div class="mt-10 flex items-center gap-8">
-                    <div>
-                        <p class="text-2xl font-bold text-gray-900">2.4K+</p>
-                        <p class="text-xs text-gray-500 mt-0.5">Listing Aktif</p>
-                    </div>
-                    <div class="w-px h-10 bg-gray-100"></div>
-                    <div>
-                        <p class="text-2xl font-bold text-gray-900">850+</p>
-                        <p class="text-xs text-gray-500 mt-0.5">Pengepul Terdaftar</p>
-                    </div>
-                    <div class="w-px h-10 bg-gray-100"></div>
-                    <div>
-                        <p class="text-2xl font-bold text-gray-900">32 Kota</p>
-                        <p class="text-xs text-gray-500 mt-0.5">Jangkauan</p>
-                    </div>
-                </div>
             </div>
 
             {{-- Right: Illustration --}}

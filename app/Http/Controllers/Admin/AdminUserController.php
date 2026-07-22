@@ -18,10 +18,38 @@ class AdminUserController extends Controller implements HasMiddleware
         ];
     }
 
-    // ponytail: list all users with eager loading
-    public function index()
+    // ponytail: list all users with eager loading & search filtering
+    public function index(Request $request)
     {
-        $users = User::with(['roles', 'sellerProfile', 'buyerProfile'])->latest()->paginate(15);
+        $query = User::with(['roles', 'sellerProfile', 'buyerProfile']);
+
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone_number', 'like', "%{$search}%")
+                  ->orWhereHas('sellerProfile', function ($sq) use ($search) {
+                      $sq->where('business_name', 'like', "%{$search}%")
+                         ->orWhere('city', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('buyerProfile', function ($bq) use ($search) {
+                      $bq->where('company_name', 'like', "%{$search}%")
+                         ->orWhere('city', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('role')) {
+            $role = $request->input('role');
+            $query->whereHas('roles', fn($rq) => $rq->where('name', $role));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $users = $query->latest()->paginate(15)->withQueryString();
         return view('admin.users.index', compact('users'));
     }
 

@@ -38,7 +38,8 @@ class LoginController extends Controller implements HasMiddleware
     {
         try {
             $this->authService->login($request->validated());
-            return $this->redirectUser(auth()->user());
+            $user = auth()->user();
+            return $this->redirectUser($user)->with('success', 'Selamat datang kembali, ' . ($user->name ?? 'Pengguna') . '! Berhasil masuk.');
         } catch (RecyclinkException $e) {
             return redirect()->back()->withInput()->with('error', $e->getMessage());
         }

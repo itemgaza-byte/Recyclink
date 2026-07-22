@@ -26,6 +26,14 @@ class MarketplaceController extends Controller
             if ($request->input('tab') === 'toko') {
                 $query = User::role('seller')->whereHas('sellerProfile')->with('sellerProfile');
                 
+                if ($request->filled('search') || $request->filled('q')) {
+                    $search = $request->input('search') ?? $request->input('q');
+                    $query->whereHas('sellerProfile', function($q) use ($search) {
+                        $q->where('business_name', 'like', '%' . $search . '%')
+                          ->orWhere('city', 'like', '%' . $search . '%');
+                    });
+                }
+
                 if ($request->filled('lokasi')) {
                     $query->whereHas('sellerProfile', function($q) use ($request) {
                         $q->where('city', 'like', '%' . $request->input('lokasi') . '%');
@@ -41,7 +49,7 @@ class MarketplaceController extends Controller
                     });
                 }
                 
-                $paginator = $query->paginate(9);
+                $paginator = $query->paginate(18);
                 $items = collect($paginator->items())->map(function($s) {
                     return [
                         'id' => $s->id,
@@ -58,6 +66,14 @@ class MarketplaceController extends Controller
                     $query->available();
                 }
 
+                if ($request->filled('search') || $request->filled('q')) {
+                    $search = $request->input('search') ?? $request->input('q');
+                    $query->where(function($q) use ($search) {
+                        $q->where('title', 'like', '%' . $search . '%')
+                          ->orWhere('description', 'like', '%' . $search . '%');
+                    });
+                }
+
                 if ($request->has('categories')) {
                     $catNames = (array)$request->input('categories');
                     $query->whereHas('category', function($q) use ($catNames) {
@@ -68,13 +84,13 @@ class MarketplaceController extends Controller
                     $query->where('city', 'like', '%' . $request->input('lokasi') . '%');
                 }
                 if ($request->filled('volume_min')) {
-                    $query->where('quantity', '>=', $request->input('volume_min'));
+                    $query->where('quantity', '>=', max(0, (float)$request->input('volume_min')));
                 }
                 if ($request->filled('harga_min')) {
-                    $query->where('price_per_unit', '>=', $request->input('harga_min'));
+                    $query->where('price_per_unit', '>=', max(0, (float)$request->input('harga_min')));
                 }
                 if ($request->filled('harga_max')) {
-                    $query->where('price_per_unit', '<=', $request->input('harga_max'));
+                    $query->where('price_per_unit', '<=', max(0, (float)$request->input('harga_max')));
                 }
                 
                 $sort = $request->input('sort', 'terbaru');
@@ -84,7 +100,7 @@ class MarketplaceController extends Controller
                 elseif ($sort === 'jarak-asc') $query->orderBy('city', 'asc');
                 else $query->latest();
                 
-                $paginator = $query->paginate(9);
+                $paginator = $query->paginate(18);
                 $items = collect($paginator->items())->map(function($l) {
                     return [
                         'id' => $l->id,
@@ -94,6 +110,7 @@ class MarketplaceController extends Controller
                         'price' => (float)$l->price_per_unit,
                         'unit' => $l->unit,
                         'stock' => (float)$l->quantity,
+                        'sellerName' => $l->seller && $l->seller->sellerProfile ? $l->seller->sellerProfile->business_name : ($l->seller->name ?? 'Penjual'),
                         'image' => $l->primaryImage ? $l->primaryImage->url : ''
                     ];
                 });
