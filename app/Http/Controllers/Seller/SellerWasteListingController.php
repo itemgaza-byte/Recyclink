@@ -39,7 +39,7 @@ class SellerWasteListingController extends Controller implements HasMiddleware
     // ponytail: creation form with categories
     public function create()
     {
-        $categories = WasteCategory::all();
+        $categories = WasteCategory::getActiveCached();
         return view('seller.listings.create', compact('categories'));
     }
 
@@ -75,7 +75,7 @@ class SellerWasteListingController extends Controller implements HasMiddleware
     {
         $this->authorize('update', $wasteListing);
 
-        $categories = WasteCategory::all();
+        $categories = WasteCategory::getActiveCached();
         return view('seller.listings.edit', compact('wasteListing', 'categories'));
     }
 

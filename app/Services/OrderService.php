@@ -203,6 +203,9 @@ class OrderService
         return DB::transaction(function () use ($buyer, $order) {
             $order->update(['order_status' => Order::STATUS_COMPLETED]);
 
+            // ponytail: eager load relations needed in this transaction
+            $order->loadMissing(['items', 'payment', 'seller']);
+
             // Decrement listing quantity with lockForUpdate
             foreach ($order->items as $item) {
                 $listing = WasteListing::where('id', $item->listing_id)->lockForUpdate()->first();

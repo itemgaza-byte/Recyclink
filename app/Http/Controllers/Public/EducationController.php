@@ -10,7 +10,11 @@ class EducationController extends Controller
     // ponytail: list all published articles, videos, and guides
     public function index()
     {
-        $allContents = EducationContent::published()->latest()->get();
+        $allContents = EducationContent::published()
+            ->select(['id', 'admin_id', 'title', 'slug', 'thumbnail_url', 'content_type', 'status', 'published_at', 'excerpt', 'view_count'])
+            ->with('admin:id,name')
+            ->latest()
+            ->get();
 
         $articles = $allContents->where('content_type', 'article');
         $videos = $allContents->where('content_type', 'video');

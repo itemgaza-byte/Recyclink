@@ -33,6 +33,7 @@ class NotificationService
     // ponytail: notify seller when a new order is created
     public function notifyOrderCreated(Order $order): void
     {
+        $order->loadMissing('seller');
         $seller = $order->seller;
         if ($seller) {
             $this->sendToUser(
@@ -48,6 +49,7 @@ class NotificationService
     // ponytail: notify buyer when order status is changed
     public function notifyOrderStatusChanged(Order $order): void
     {
+        $order->loadMissing('buyer');
         $buyer = $order->buyer;
         if ($buyer) {
             $statusMap = [
@@ -72,6 +74,7 @@ class NotificationService
     // ponytail: notify seller when payment is successful
     public function notifyPaymentSuccess(Order $order): void
     {
+        $order->loadMissing('seller');
         $seller = $order->seller;
         if ($seller) {
             $this->sendToUser(
@@ -87,6 +90,7 @@ class NotificationService
     // ponytail: notify seller when listing verification is approved/rejected
     public function notifyListingVerified(WasteListing $listing): void
     {
+        $listing->loadMissing('seller');
         $seller = $listing->seller;
         if ($seller) {
             $statusMap = [
@@ -110,6 +114,7 @@ class NotificationService
     // ponytail: notify seller when listing is deactivated by admin
     public function notifyListingDeactivated(WasteListing $listing): void
     {
+        $listing->loadMissing('seller');
         $seller = $listing->seller;
         if ($seller) {
             $note = $listing->admin_note ? " Alasan: {$listing->admin_note}" : "";
@@ -127,6 +132,7 @@ class NotificationService
     // ponytail: notify admin or respondent of complaint
     public function notifyComplaintCreated(Complaint $complaint): void
     {
+        $complaint->loadMissing(['respondent', 'order']);
         $respondent = $complaint->respondent;
         if ($respondent) {
             $this->sendToUser(

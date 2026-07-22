@@ -29,9 +29,10 @@
                         </summary>
                         <div class="mt-4 space-y-3 max-h-48 overflow-y-auto pr-1">
                             @foreach($categories as $category)
+                                @php $catName = data_get($category, 'category_name', $category); @endphp
                                 <label class="flex items-center gap-3 cursor-pointer group/label">
-                                    <input type="checkbox" value="{{ strtolower($category->category_name) }}" class="category-filter accent-brand w-4 h-4 rounded cursor-pointer border-gray-300 text-brand focus:ring-brand">
-                                    <span class="text-sm text-gray-600 group-hover/label:text-gray-900 transition-colors">{{ $category->category_name }}</span>
+                                    <input type="checkbox" value="{{ strtolower($catName) }}" class="category-filter accent-brand w-4 h-4 rounded cursor-pointer border-gray-300 text-brand focus:ring-brand">
+                                    <span class="text-sm text-gray-600 group-hover/label:text-gray-900 transition-colors">{{ $catName }}</span>
                                 </label>
                             @endforeach
                         </div>

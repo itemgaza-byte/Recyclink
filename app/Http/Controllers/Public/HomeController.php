@@ -19,7 +19,7 @@ class HomeController extends Controller
             ->take(4)
             ->get();
 
-        $featuredArticles = EducationContent::published()->latest()->take(3)->get();
+        $featuredArticles = EducationContent::published()->with('admin')->latest()->take(3)->get();
 
         return view('public.home', compact('recentListings', 'featuredArticles'));
     }

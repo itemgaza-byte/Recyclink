@@ -30,14 +30,14 @@ class AdminListingVerificationController extends Controller implements HasMiddle
     // ponytail: list listings awaiting verification or all with eager loading
     public function index()
     {
-        $listings = WasteListing::with(['seller', 'category', 'primaryImage'])->latest()->paginate(15);
+        $listings = WasteListing::with(['seller.sellerProfile', 'category', 'primaryImage'])->latest()->paginate(15);
         return view('admin.listings.index', compact('listings'));
     }
 
     // ponytail: show listing details for review
     public function show(WasteListing $wasteListing)
     {
-        $wasteListing->load(['seller', 'category']);
+        $wasteListing->load(['seller.sellerProfile', 'category', 'images']);
         return view('admin.listings.show', ['listing' => $wasteListing]);
     }
 

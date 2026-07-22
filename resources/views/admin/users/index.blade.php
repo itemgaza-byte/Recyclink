@@ -35,6 +35,10 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
+                    @php
+                        $currentUserId = auth()->id();
+                        $currentUserIsSuperAdmin = auth()->user()->email === 'admin@recyclink.id';
+                    @endphp
                     @forelse($users as $user)
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-6 py-4">
@@ -96,24 +100,11 @@
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    
-                                    <!-- Optional: Toggle Status Modal/Form -->
                                     @php
                                         $isSuperAdmin = $user->email === 'admin@recyclink.id';
                                         $isAdminUtama = $user->email === 'admin@recyclink.com';
-                                        $currentUserIsSuperAdmin = auth()->user()->email === 'admin@recyclink.id';
-                                        $isSelf = $user->id === auth()->id();
-                                        
                                         $canUpdateStatus = !($isSuperAdmin || $isAdminUtama);
-                                        
-                                        $canDelete = false;
-                                        if (!$isSelf && !$isSuperAdmin) {
-                                            if ($isAdminUtama) {
-                                                $canDelete = $currentUserIsSuperAdmin;
-                                            } else {
-                                                $canDelete = true;
-                                            }
-                                        }
+                                        $canDelete = ($user->id !== $currentUserId && !$isSuperAdmin) && (!$isAdminUtama || $currentUserIsSuperAdmin);
                                     @endphp
                                     
                                     @if($canUpdateStatus)
@@ -125,6 +116,7 @@
 
                                     <!-- Button for detail view modal -->
                                     <button type="button" class="p-2 text-brand hover:bg-brand/10 rounded-lg transition-colors tooltip btn-view-user" title="Lihat Detail"
+                                        data-user-id="{{ $user->id }}"
                                         data-name="{{ $user->name }}"
                                         data-email="{{ $user->email }}"
                                         data-phone="{{ $user->phone_number ?? '-' }}"
@@ -134,10 +126,10 @@
                                         data-raw-status="{{ $user->status }}"
                                         data-reason="{{ $user->rejection_reason ?? '-' }}"
                                         data-can-update-status="{{ $canUpdateStatus ? 'true' : 'false' }}"
-                                        data-user-id="{{ $user->id }}"
                                         @if($user->hasRole('buyer') && $user->buyerProfile)
                                             data-profile-type="buyer"
                                             data-company="{{ $user->buyerProfile->company_name ?? '-' }}"
+                                            data-btype="{{ $user->buyerProfile->buyer_type ?? '-' }}"
                                             data-industry="{{ $user->buyerProfile->industry_type ?? '-' }}"
                                             data-address="{{ $user->buyerProfile->address ?? '-' }}"
                                             data-city="{{ $user->buyerProfile->city ?? '-' }}"
@@ -154,7 +146,12 @@
                                             data-lat="{{ $user->sellerProfile->latitude ?? '-' }}"
                                             data-lng="{{ $user->sellerProfile->longitude ?? '-' }}"
                                             data-verification-status="{{ $user->sellerProfile->verification_status ?? '-' }}"
-                                            data-user-id="{{ $user->id }}"
+                                            data-npwp="{{ $user->sellerProfile->npwp ?? '-' }}"
+                                            data-nib="{{ $user->sellerProfile->nib ?? '-' }}"
+                                            data-bank-name="{{ $user->sellerProfile->bank_name ?? '-' }}"
+                                            data-bank-acc="{{ $user->sellerProfile->bank_account_number ?? '-' }}"
+                                            data-bank-holder="{{ $user->sellerProfile->bank_account_name ?? '-' }}"
+                                            data-desc="{{ $user->sellerProfile->description ?? '-' }}"
                                         @else
                                             data-profile-type="none"
                                         @endif
@@ -170,9 +167,6 @@
                                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                                             </button>
                                         </form>
-                                    @else
-                                        <!-- Placeholder to maintain spacing -->
-                                        <div class="w-8 inline-block"></div>
                                     @endif
                                 </div>
                             </td>
@@ -221,8 +215,12 @@
                 <h3 class="text-xl font-bold text-gray-900" id="modalUserName">Nama Pengguna</h3>
                 <p class="text-sm text-gray-500" id="modalUserEmail">email@example.com</p>
             </div>
-            <div class="ml-auto mr-8">
+            <div class="ml-auto mr-8 flex items-center gap-2">
                 <span id="modalUserStatus" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Status</span>
+                <a id="modalUserDetailLink" href="#" class="p-2 text-brand hover:bg-brand/10 rounded-lg transition-colors text-xs font-bold inline-flex items-center gap-1" title="Buka Halaman Detail">
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Halaman Detail</span>
+                </a>
             </div>
         </div>
         
@@ -278,7 +276,6 @@
         
         function openModal() {
             modal.classList.remove('hidden');
-            // small delay for transition
             setTimeout(() => {
                 backdrop.classList.remove('opacity-0');
                 backdrop.classList.add('opacity-100');
@@ -302,12 +299,15 @@
         
         document.querySelectorAll('.btn-view-user').forEach(button => {
             button.addEventListener('click', function() {
+                const userId = this.dataset.userId;
+                
                 // Populate data
                 document.getElementById('modalUserName').textContent = this.dataset.name;
                 document.getElementById('modalUserEmail').textContent = this.dataset.email;
                 document.getElementById('modalUserPhone').textContent = this.dataset.phone;
                 document.getElementById('modalUserRole').textContent = this.dataset.role;
                 document.getElementById('modalUserJoined').textContent = this.dataset.joined;
+                document.getElementById('modalUserDetailLink').href = `/dashboard/admin/users/${userId}`;
                 
                 const reasonText = this.dataset.reason;
                 const reasonContainer = document.getElementById('modalReasonContainer');
@@ -322,12 +322,15 @@
                 const statusSpan = document.getElementById('modalUserStatus');
                 statusSpan.textContent = this.dataset.status;
                 statusSpan.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium';
-                if (this.dataset.status.toLowerCase() === 'active') {
+                const rawStatus = this.dataset.rawStatus;
+                if (rawStatus === 'active') {
                     statusSpan.classList.add('bg-emerald-100', 'text-emerald-700');
-                } else if (this.dataset.status.toLowerCase() === 'suspended') {
+                } else if (rawStatus === 'suspended') {
                     statusSpan.classList.add('bg-red-100', 'text-red-700');
-                } else {
+                } else if (rawStatus === 'pending') {
                     statusSpan.classList.add('bg-amber-100', 'text-amber-700');
+                } else {
+                    statusSpan.classList.add('bg-gray-100', 'text-gray-700');
                 }
                 
                 const type = this.dataset.profileType;
@@ -338,6 +341,7 @@
                         <h4 class="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Profil Pembeli</h4>
                         <div class="space-y-4">
                             <div><p class="text-xs text-gray-500 mb-1">Nama Perusahaan</p><p class="text-sm font-medium text-gray-900">${this.dataset.company}</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">Tipe Pembeli</p><p class="text-sm font-medium text-gray-900">${this.dataset.btype}</p></div>
                             <div><p class="text-xs text-gray-500 mb-1">Jenis Industri</p><p class="text-sm font-medium text-gray-900">${this.dataset.industry}</p></div>
                             <div><p class="text-xs text-gray-500 mb-1">Alamat Lengkap</p><p class="text-sm font-medium text-gray-900">${this.dataset.address}</p></div>
                             <div><p class="text-xs text-gray-500 mb-1">Kota / Provinsi</p><p class="text-sm font-medium text-gray-900">${this.dataset.city}, ${this.dataset.province}</p></div>
@@ -347,33 +351,42 @@
                 } else if (type === 'seller') {
                     let verificationBadge = '';
                     if (this.dataset.verificationStatus === 'pending') {
-                        verificationBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800 whitespace-nowrap uppercase tracking-normal">Menunggu Verifikasi</span>';
+                        verificationBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-amber-100 text-amber-800 whitespace-nowrap uppercase tracking-normal">Menunggu Verifikasi</span>';
                     } else if (this.dataset.verificationStatus === 'verified') {
-                        verificationBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800 whitespace-nowrap uppercase tracking-normal">Terverifikasi</span>';
+                        verificationBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-800 whitespace-nowrap uppercase tracking-normal">Terverifikasi</span>';
+                    } else if (this.dataset.verificationStatus === 'rejected') {
+                        verificationBadge = '<span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold bg-red-100 text-red-800 whitespace-nowrap uppercase tracking-normal">Ditolak</span>';
                     }
                     
                     html = `
-                        <div class="flex flex-col gap-2 mb-5">
-                            <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                                Profil Penjual
-                            </h4>
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Profil Penjual</h4>
                             <div>${verificationBadge}</div>
                         </div>
                         <div class="space-y-4">
-                            <div><p class="text-xs text-gray-500 mb-1">Nama Usaha/Pengepul</p><p class="text-sm font-medium text-gray-900">${this.dataset.business}</p></div>
+                            <div><p class="text-xs text-gray-500 mb-1">Nama Usaha / Pengepul</p><p class="text-sm font-medium text-gray-900">${this.dataset.business}</p></div>
                             <div><p class="text-xs text-gray-500 mb-1">Tipe Usaha</p><p class="text-sm font-medium text-gray-900">${this.dataset.btype}</p></div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><p class="text-xs text-gray-500 mb-1">NPWP</p><p class="text-sm font-medium text-gray-900">${this.dataset.npwp}</p></div>
+                                <div><p class="text-xs text-gray-500 mb-1">NIB</p><p class="text-sm font-medium text-gray-900">${this.dataset.nib}</p></div>
+                            </div>
                             <div><p class="text-xs text-gray-500 mb-1">Alamat Lengkap</p><p class="text-sm font-medium text-gray-900">${this.dataset.address}</p></div>
                             <div><p class="text-xs text-gray-500 mb-1">Kota / Provinsi</p><p class="text-sm font-medium text-gray-900">${this.dataset.city}, ${this.dataset.province}</p></div>
                             <div><p class="text-xs text-gray-500 mb-1">Kode Pos</p><p class="text-sm font-medium text-gray-900">${this.dataset.zip}</p></div>
                             <div>
+                                <p class="text-xs text-gray-500 mb-1">Rekening Bank</p>
+                                <p class="text-sm font-medium text-gray-900">${this.dataset.bankName} - ${this.dataset.bankAcc} a.n ${this.dataset.bankHolder}</p>
+                            </div>
+                            <div>
                                 <p class="text-xs text-gray-500 mb-1">Titik Lokasi (Maps)</p>
                                 <p class="text-sm font-medium text-gray-900">
                                     ${this.dataset.lat !== '-' && this.dataset.lng !== '-' ? 
-                                        `<a href="https://www.google.com/maps/search/?api=1&query=${this.dataset.lat},${this.dataset.lng}" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i data-lucide="map" class="w-4 h-4"></i> ${this.dataset.lat}, ${this.dataset.lng}</a>` 
+                                        `<a href="https://www.google.com/maps/search/?api=1&query=${this.dataset.lat},${this.dataset.lng}" target="_blank" class="text-blue-600 hover:underline inline-flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> ${this.dataset.lat}, ${this.dataset.lng}</a>` 
                                         : 'Belum diatur'
                                     }
                                 </p>
                             </div>
+                            ${this.dataset.desc !== '-' ? `<div><p class="text-xs text-gray-500 mb-1">Deskripsi</p><p class="text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-100">${this.dataset.desc}</p></div>` : ''}
                         </div>
                     `;
                 } else {
@@ -386,10 +399,12 @@
                 
                 let showAction = false;
                 if (this.dataset.canUpdateStatus === 'true') {
-                    if (this.dataset.rawStatus === 'pending') {
+                    const verificationStatus = this.dataset.verificationStatus;
+
+                    if (rawStatus === 'pending') {
                         actionContainer.innerHTML = `
                             <div class="flex gap-4">
-                                <form action="/dashboard/admin/users/${this.dataset.userId}/status" method="POST" class="flex-1 form-reject-user">
+                                <form action="/dashboard/admin/users/${userId}/status" method="POST" class="flex-1 form-reject-user">
                                     @csrf
                                     @method('PATCH')
                                     <input type="hidden" name="status" value="inactive">
@@ -399,7 +414,7 @@
                                         Tolak Pendaftaran
                                     </button>
                                 </form>
-                                <form action="/dashboard/admin/users/${this.dataset.userId}/status" method="POST" class="flex-1">
+                                <form action="/dashboard/admin/users/${userId}/status" method="POST" class="flex-1">
                                     @csrf
                                     @method('PATCH')
                                     <input type="hidden" name="status" value="active">
@@ -411,105 +426,137 @@
                             </div>
                         `;
                         showAction = true;
-                        
-                        // Re-bind sweetalert event listener for reject
-                        setTimeout(() => {
-                            const rejectBtn = actionContainer.querySelector('.btn-reject-user');
-                            if (rejectBtn) {
-                                rejectBtn.addEventListener('click', function() {
-                                    const form = this.closest('form');
-                                    Swal.fire({
-                                        title: 'Tolak Pendaftaran?',
-                                        text: 'Apakah Anda yakin ingin menolak pengguna ini?',
-                                        icon: 'warning',
-                                        input: 'textarea',
-                                        inputLabel: 'Alasan Penolakan',
-                                        inputPlaceholder: 'Tulis alasan penolakan di sini agar pengguna dapat memperbaiki profilnya...',
-                                        inputAttributes: {
-                                            'aria-label': 'Alasan penolakan'
-                                        },
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#ef4444',
-                                        cancelButtonColor: '#6b7280',
-                                        confirmButtonText: 'Tolak',
-                                        cancelButtonText: 'Batal',
-                                        customClass: {
-                                            popup: 'rounded-2xl shadow-xl',
-                                            confirmButton: 'rounded-xl',
-                                            cancelButton: 'rounded-xl',
-                                            input: 'rounded-xl p-3 border-gray-300 focus:border-brand focus:ring-brand/20'
-                                        },
-                                        preConfirm: (reason) => {
-                                            if (!reason) {
-                                                Swal.showValidationMessage('Alasan penolakan harus diisi')
-                                            }
-                                            return reason;
-                                        }
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            form.querySelector('.rejection-reason-input').value = result.value;
-                                            form.submit();
-                                        }
-                                    });
-                                });
-                            }
-                        }, 100);
-                        
-                    } else if (this.dataset.rawStatus === 'active') {
+                    } else if (rawStatus === 'inactive' || rawStatus === 'suspended') {
                         actionContainer.innerHTML = `
-                            <form action="/dashboard/admin/users/${this.dataset.userId}/status" method="POST" class="w-full form-suspend-user">
+                            <form action="/dashboard/admin/users/${userId}/status" method="POST" class="w-full">
                                 @csrf
                                 @method('PATCH')
-                                <input type="hidden" name="status" value="suspended">
-                                <input type="hidden" name="rejection_reason" class="suspension-reason-input" value="">
-                                <button type="button" class="w-full px-4 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all flex items-center justify-center gap-2 btn-suspend-user shadow-sm">
-                                    <i data-lucide="ban" class="w-5 h-5"></i>
-                                    Tangguhkan Akun
+                                <input type="hidden" name="status" value="active">
+                                <button type="submit" class="w-full px-4 py-3 bg-[#719149] text-white font-bold rounded-xl hover:bg-[#607d3c] transition-all flex items-center justify-center gap-2 shadow-sm">
+                                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                                    Aktifkan & Verifikasi Akun
                                 </button>
                             </form>
                         `;
                         showAction = true;
-                        
-                        setTimeout(() => {
-                            const suspendBtn = actionContainer.querySelector('.btn-suspend-user');
-                            if (suspendBtn) {
-                                suspendBtn.addEventListener('click', function() {
-                                    const form = this.closest('form');
-                                    Swal.fire({
-                                        title: 'Tangguhkan Akun?',
-                                        text: 'Apakah Anda yakin ingin menangguhkan akun pengguna ini?',
-                                        icon: 'warning',
-                                        input: 'textarea',
-                                        inputLabel: 'Alasan Penangguhan',
-                                        showCancelButton: true,
-                                        confirmButtonColor: '#ef4444',
-                                        cancelButtonColor: '#6b7280',
-                                        confirmButtonText: 'Tangguhkan',
-                                        cancelButtonText: 'Batal',
-                                        customClass: {
-                                            popup: 'rounded-2xl shadow-xl',
-                                            confirmButton: 'rounded-xl',
-                                            cancelButton: 'rounded-xl'
-                                        }
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            form.querySelector('.suspension-reason-input').value = result.value || 'Melanggar ketentuan layanan';
-                                            form.submit();
-                                        }
-                                    });
-                                });
-                            }
-                        }, 100);
+                    } else if (rawStatus === 'active') {
+                        if (type === 'seller' && (verificationStatus === 'pending' || verificationStatus === 'rejected')) {
+                            actionContainer.innerHTML = `
+                                <div class="flex gap-4">
+                                    <form action="/dashboard/admin/users/${userId}/status" method="POST" class="flex-1 form-suspend-user">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="status" value="suspended">
+                                        <input type="hidden" name="rejection_reason" class="suspension-reason-input" value="">
+                                        <button type="button" class="w-full px-4 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all flex items-center justify-center gap-2 btn-suspend-user shadow-sm">
+                                            <i data-lucide="ban" class="w-5 h-5"></i>
+                                            Tangguhkan Akun
+                                        </button>
+                                    </form>
+                                    <form action="/dashboard/admin/users/${userId}/verify-seller-profile" method="POST" class="flex-1">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="w-full px-4 py-3 bg-[#719149] text-white font-bold rounded-xl hover:bg-[#607d3c] transition-all flex items-center justify-center gap-2 shadow-sm">
+                                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                                            Verifikasi Profil Penjual
+                                        </button>
+                                    </form>
+                                </div>
+                            `;
+                        } else {
+                            actionContainer.innerHTML = `
+                                <form action="/dashboard/admin/users/${userId}/status" method="POST" class="w-full form-suspend-user">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="status" value="suspended">
+                                    <input type="hidden" name="rejection_reason" class="suspension-reason-input" value="">
+                                    <button type="button" class="w-full px-4 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-all flex items-center justify-center gap-2 btn-suspend-user shadow-sm">
+                                        <i data-lucide="ban" class="w-5 h-5"></i>
+                                        Tangguhkan Akun
+                                    </button>
+                                </form>
+                            `;
+                        }
+                        showAction = true;
                     }
                 }
                 
                 if (showAction) {
                     actionContainer.classList.remove('hidden');
+                    
+                    // Bind SweetAlert handlers inside action container
+                    setTimeout(() => {
+                        const rejectBtn = actionContainer.querySelector('.btn-reject-user');
+                        if (rejectBtn) {
+                            rejectBtn.addEventListener('click', function() {
+                                const form = this.closest('form');
+                                Swal.fire({
+                                    title: 'Tolak Pendaftaran?',
+                                    text: 'Apakah Anda yakin ingin menolak pendaftaran pengguna ini?',
+                                    icon: 'warning',
+                                    input: 'textarea',
+                                    inputLabel: 'Alasan Penolakan',
+                                    inputPlaceholder: 'Tulis alasan penolakan di sini...',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#ef4444',
+                                    cancelButtonColor: '#6b7280',
+                                    confirmButtonText: 'Tolak',
+                                    cancelButtonText: 'Batal',
+                                    customClass: {
+                                        popup: 'rounded-2xl shadow-xl',
+                                        confirmButton: 'rounded-xl',
+                                        cancelButton: 'rounded-xl',
+                                        input: 'rounded-xl p-3 border-gray-300 focus:border-brand focus:ring-brand/20'
+                                    },
+                                    preConfirm: (reason) => {
+                                        if (!reason) {
+                                            Swal.showValidationMessage('Alasan penolakan harus diisi')
+                                        }
+                                        return reason;
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        form.querySelector('.rejection-reason-input').value = result.value;
+                                        form.submit();
+                                    }
+                                });
+                            });
+                        }
+                        
+                        const suspendBtn = actionContainer.querySelector('.btn-suspend-user');
+                        if (suspendBtn) {
+                            suspendBtn.addEventListener('click', function() {
+                                const form = this.closest('form');
+                                Swal.fire({
+                                    title: 'Tangguhkan Akun?',
+                                    text: 'Apakah Anda yakin ingin menangguhkan akun pengguna ini?',
+                                    icon: 'warning',
+                                    input: 'textarea',
+                                    inputLabel: 'Alasan Penangguhan',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#ef4444',
+                                    cancelButtonColor: '#6b7280',
+                                    confirmButtonText: 'Tangguhkan',
+                                    cancelButtonText: 'Batal',
+                                    customClass: {
+                                        popup: 'rounded-2xl shadow-xl',
+                                        confirmButton: 'rounded-xl',
+                                        cancelButton: 'rounded-xl'
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        form.querySelector('.suspension-reason-input').value = result.value || 'Melanggar ketentuan layanan';
+                                        form.submit();
+                                    }
+                                });
+                            });
+                        }
+                    }, 50);
                 } else {
                     actionContainer.classList.add('hidden');
                 }
                 
-                // Re-initialize lucide icons for the new content in action container
+                // Re-initialize lucide icons for the new content in modal
                 if (window.lucide) {
                     lucide.createIcons();
                 }

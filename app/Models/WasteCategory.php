@@ -25,19 +25,16 @@ class WasteCategory extends Model
 
     protected static function booted(): void
     {
-        $clearCache = function () {
-            // ponytail: clear active categories cache on modifications
-//             Cache::forget('waste_categories_active');
-        };
-
-        static::created($clearCache);
-        static::updated($clearCache);
-        static::deleted($clearCache);
+        // ponytail: invalidate cache on category changes
+        $clear = fn() => \Illuminate\Support\Facades\Cache::forget('waste_categories');
+        static::created($clear);
+        static::updated($clear);
+        static::deleted($clear);
     }
 
     public static function getActiveCached()
     {
-        return static::active()->orderBy('sort_order')->get();
+        return Cache::remember('waste_categories', 3600, fn() => static::active()->orderBy('sort_order')->get());
     }
 
     public function scopeActive($query)        { return $query->where('is_active', true); }

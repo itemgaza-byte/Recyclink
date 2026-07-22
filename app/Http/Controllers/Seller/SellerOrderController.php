@@ -38,7 +38,7 @@ class SellerOrderController extends Controller implements HasMiddleware
     {
         $this->authorize('view', $order);
 
-        $order->load(['buyer', 'items.listing', 'payment']);
+        $order->load(['buyer', 'items.listing', 'payment', 'complaints']);
         return view('seller.orders.show', compact('order'));
     }
 

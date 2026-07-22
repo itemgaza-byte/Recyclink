@@ -5,10 +5,8 @@
         $favoritesList = collect();
         $cartList = collect();
         if (auth()->check() && auth()->user()->isBuyer()) {
-            $favCount = auth()->user()->favoriteListings()->count();
-            if ($favCount > 0) {
-                $favoritesList = auth()->user()->favoriteListings()->with('listing.primaryImage', 'listing.category')->latest()->take(4)->get();
-            }
+            $favoritesList = auth()->user()->favoriteListings()->with('listing.primaryImage', 'listing.category')->latest()->take(4)->get();
+            $favCount = $favoritesList->count();
         }
         $cartData = [];
         if (session()->has('cart')) {

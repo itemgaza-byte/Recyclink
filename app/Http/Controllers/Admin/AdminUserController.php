@@ -21,7 +21,7 @@ class AdminUserController extends Controller implements HasMiddleware
     // ponytail: list all users with eager loading
     public function index()
     {
-        $users = User::with('roles')->latest()->paginate(15);
+        $users = User::with(['roles', 'sellerProfile', 'buyerProfile'])->latest()->paginate(15);
         return view('admin.users.index', compact('users'));
     }
 

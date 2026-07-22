@@ -90,6 +90,9 @@ class WasteListingService
             ]);
         }
 
+        // ponytail: check once outside the loop instead of per-image
+        $hasPrimary = $listing->images()->where('is_primary', true)->exists();
+
         foreach ($images as $index => $image) {
             if ($image instanceof \Illuminate\Http\UploadedFile) {
                 // Upload to Cloudinary
@@ -98,7 +101,7 @@ class WasteListingService
                     'resource_type' => 'image',
                 ]);
 
-                $isPrimary = $index === 0 && !$listing->images()->where('is_primary', true)->exists();
+                $isPrimary = $index === 0 && !$hasPrimary;
 
                 $uploaded[] = ListingImage::create([
                     'listing_id' => $listing->id,

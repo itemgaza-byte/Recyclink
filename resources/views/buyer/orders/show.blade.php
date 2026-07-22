@@ -122,10 +122,7 @@
                 </a>
                 @endif
 
-                @if($order->order_status === 'disputed')
-                @php
-                    $complaint = \App\Models\Complaint::where('order_id', $order->id)->first();
-                @endphp
+                @if($order->order_status === 'disputed' && ($complaint = $order->complaints->first()))
                 <a href="{{ route('buyer.complaints.show', $complaint->id) }}" class="px-5 py-2.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border border-yellow-200 font-bold text-sm rounded-xl transition-colors w-full flex justify-center items-center gap-2">
                     <i data-lucide="alert-circle" class="w-4 h-4"></i> Lihat Resolusi Komplain
                 </a>
